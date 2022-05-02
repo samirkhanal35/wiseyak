@@ -1,0 +1,11 @@
+#lang racket
+(define firstValue 0)
+(define secondValue 1)
+(define (fibonacciSeries first second Totalsteps)
+  (display first)
+  (display "\n")
+  (cond ((> Totalsteps 0) (fibonacciSeries second (+ first second) ( - Totalsteps 1))))
+        )
+ 
+
+(fibonacciSeries firstValue secondValue 10)

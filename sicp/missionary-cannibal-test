@@ -1,0 +1,141 @@
+#lang racket
+(define (DepthFirstSearch Path nextMove checkFinalState MaxDepth) 
+  (define (firstIndex)
+     (list-ref (list-ref Path 0) 1)
+     )
+  
+  (define (RemoveLastState)  
+   (define lastIndex (- (length Path) 1))
+   (define lastStateIndex (list-ref Path lastIndex))
+    (set! Path (remove lastStateIndex Path))
+   (list-ref lastStateIndex 1)
+   )
+  
+ (define (getLast-State)  
+   (list-ref (list-ref Path (- (length Path) 1)) 0)
+   )
+  
+  (define prevIndex (firstIndex))
+  (define Branch-pruned '#f)  
+  
+  (define (DFS-Inner-Loop)
+     
+   (define LastState (getLast-State))
+    
+   (define NextStateIndex (nextMove LastState prevIndex))
+    (define NextState  0)
+    
+    (display "\nPath:\n")
+    (display Path)
+    
+   (cond (NextStateIndex
+        (set! Path (append Path (list NextStateIndex)))    
+        (set! prevIndex (firstIndex))      
+        (set! NextState (list-ref NextStateIndex 0))
+        (cond ((checkFinalState NextState) Path
+         )
+         ((> (+ (length Path) 1) MaxDepth)
+            (set! prevIndex (RemoveLastState))
+             (set! Branch-pruned '#t)
+             (DFS-Inner-Loop)
+             )
+         (else (DFS-Inner-Loop))
+         )
+        )       
+       (else (cond ((> (length Path) 1) 
+                                (set! prevIndex (RemoveLastState))
+                                (DFS-Inner-Loop)
+                                )
+                                
+           )
+        )
+             
+    )
+   
+  )
+
+  (DFS-Inner-Loop)
+  
+
+  )
+
+
+(define (Missionary-cannibal m c)
+   (define InitialState (list m c 1))
+   (define Possiblemoves (list (list 0 1) (list 1 0) (list 1 1) (list 0 2) (list 2 0)))
+   (define maxMoves 5)
+   (define InitialIndex -1)
+
+   (define (CheckLegality State)    
+      (define rCannibals (list-ref State 1))
+      (define rMissionaries (list-ref State 0))
+      (define lCannibals (- (list-ref InitialState 1) (list-ref State 1)))
+      (define lMissionaries (- (list-ref InitialState 0) (list-ref State 0)))
+      (and
+       (or
+        (< rCannibals (+ rMissionaries 1))
+        (= rMissionaries 0)) 
+       (or
+        (< lCannibals (+ lMissionaries 1))
+        (= lMissionaries 0))
+       
+      ))
+
+   (define (checkFinalState CurrentState)
+     (and
+      (= (list-ref CurrentState 0) 0)
+      (= (list-ref CurrentState 1) 0)
+      ))
+
+   (define (nextMove CurrentState prevIndex)
+     (display "Inside next move\nPassed CurrentState:")
+     (display CurrentState)
+     (display "\n")
+     (display "Inside next move, passed prevIndex:\n")
+     (display prevIndex)
+     (display "\n")
+     
+     (define BoatPosition (list-ref CurrentState 2))
+     (define newStateIndex 0)
+     (define newStateIndexFlag '#f)
+     (define StartingIndex (+ prevIndex 1))     
+     (define (nextMoveState)
+       (cond ((< StartingIndex maxMoves)
+              (define Move (list-ref Possiblemoves StartingIndex))
+              (define newState (list
+                           (+ (list-ref CurrentState 0) (* BoatPosition (list-ref Move 0) -1))
+                           (+ (list-ref CurrentState 1) (* BoatPosition (list-ref Move 1) -1))
+                           (* BoatPosition -1)))
+              (set! newStateIndex (list newState StartingIndex))
+        (cond  ((CheckLegality newState)
+                (display "\n passed checkLegality newState:")
+                (display newStateIndex)
+                (set! newStateIndexFlag '#t))
+               (else (+ StartingIndex 1) nextMoveState)
+               )
+              )
+         )
+       (if newStateIndexFlag newStateIndex '#f)       
+              
+       )
+     (nextMoveState)
+      )
+
+  (define Path (list (list InitialState InitialIndex)))
+  (define MaxDepth 12)
+  (display "Initial Path")
+  (display Path)
+  (display "\n")
+  (display "first index")
+  (display (list-ref (list-ref Path 0) 1))
+  (display "\n")
+  (display "Initial MaxDepth:")
+  (display MaxDepth)
+  (display "\n")
+  (display (DepthFirstSearch Path nextMove checkFinalState MaxDepth))
+
+
+   )
+
+
+(Missionary-cannibal 3 3)

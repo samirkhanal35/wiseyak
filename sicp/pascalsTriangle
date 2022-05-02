@@ -1,0 +1,21 @@
+#lang racket
+(define (Pascal-triangle-stepValue row term)
+  (cond ((= term row) (display 1) (display "\n") (Pascal-triangle-stepValue row (+ term 1)))
+    ((= term 0) (display 1) (display " ") (Pascal-triangle-stepValue row (+ term 1)))         
+         ((< term row) (display (/ (factorial row) (* (factorial term) (factorial (- row term))))) (display " ") (Pascal-triangle-stepValue row (+ term 1))  )      
+         
+   ))
+
+(define (factorial n)
+  (if (= n 1) 1 (* n (factorial (- n 1)))))
+
+(define Initialrow 0)
+
+(define (Pascal-triangle totalSteps row)  
+  (define term 0)
+  (cond ((> totalSteps 0) (Pascal-triangle-stepValue row term) (Pascal-triangle (- totalSteps 1) (+ row 1) )  )
+         ((= totalSteps 0) (display "Problem solved!!"))
+         )  
+  )
+
+(Pascal-triangle 10 Initialrow)

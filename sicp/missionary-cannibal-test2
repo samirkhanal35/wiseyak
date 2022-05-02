@@ -1,0 +1,139 @@
+#lang racket
+(define (DepthFirstSearch Path nextMove checkFinalState MaxDepth)
+
+  (define (LastStateIndex)
+    (define lastIndex (- (length Path) 1))
+    (define lastStateIndex (list-ref Path lastIndex))
+     (list-ref lastStateIndex 1)
+    )
+  
+  (define (firstIndex)
+     (list-ref (list-ref Path 0) 1)
+     )
+  
+  (define (RemoveLastState)  
+   (define lastIndex (- (length Path) 1))
+   (define lastStateIndex (list-ref Path lastIndex))    
+   (set! Path (reverse (remove lastStateIndex (reverse Path))))    
+   (list-ref lastStateIndex 1)
+   )
+  
+  (define (getLast-State)  
+   (list-ref (list-ref Path (- (length Path) 1)) 0)
+   )
+  
+  (define prevIndex (LastStateIndex))
+  (define Branch-pruned '#f)  
+  (define (DFS-Inner-Loop)    
+  (define LastState (getLast-State))    
+  (define NextStateIndex (nextMove LastState prevIndex))
+  (define NextState  0)    
+    
+   (cond (NextStateIndex        
+        (set! Path (append Path (list NextStateIndex)))        
+        (set! prevIndex (firstIndex))      
+        (set! NextState (list-ref NextStateIndex 0))
+        (cond
+          ((checkFinalState NextState) (list Path Branch-pruned))
+          ((> (length Path) MaxDepth)
+            (set! prevIndex (RemoveLastState))
+             (set! Branch-pruned '#t)
+             (DFS-Inner-Loop)
+             )
+          (else (DFS-Inner-Loop))
+         )
+        )       
+    (else (cond
+            ((> (length Path) 1)
+              (set! prevIndex (RemoveLastState))
+              (DFS-Inner-Loop)
+              )
+           (else (list Path Branch-pruned))                               
+           )
+        )             
+    )   
+  )
+  (DFS-Inner-Loop)
+  )
+
+
+(define (Missionary-cannibal m c)
+   (define InitialState (list m c 1))
+   (define Possiblemoves (list (list 0 1) (list 1 0) (list 1 1) (list 0 2) (list 2 0)))
+   (define maxMoves 5)
+   (define InitialIndex -1)
+ 
+   (define (CheckLegality State)    
+      (define rCannibals (list-ref State 1))
+      (define rMissionaries (list-ref State 0))
+      (define lCannibals (- (list-ref InitialState 1) (list-ref State 1)))
+      (define lMissionaries (- (list-ref InitialState 0) (list-ref State 0)))
+      (and
+       (or
+        (< rCannibals (+ rMissionaries 1))
+        (= rMissionaries 0)) 
+       (or
+        (< lCannibals (+ lMissionaries 1))
+        (= lMissionaries 0))       
+      )
+     )
+
+   (define (checkFinalState CurrentState)
+     (and
+      (= (list-ref CurrentState 0) 0)
+      (= (list-ref CurrentState 1) 0)
+      ))
+
+   (define (nextMove CurrentState prevIndex)     
+     (define BoatPosition (list-ref CurrentState 2))
+     (define newStateIndex 0)
+     (define newStateIndexFlag '#f)
+     (define StartingIndex (+ prevIndex 1))     
+     (define (nextMoveState)
+       (cond ((< StartingIndex maxMoves)              
+              (define Move (list-ref Possiblemoves StartingIndex))
+              (define newState (list
+                           (+ (list-ref CurrentState 0) (* BoatPosition (list-ref Move 0) -1))
+                           (+ (list-ref CurrentState 1) (* BoatPosition (list-ref Move 1) -1))
+                           (* BoatPosition -1)))
+              
+              (set! newStateIndex (list newState StartingIndex))              
+        (cond  ((CheckLegality newState)                
+                (set! newStateIndexFlag '#t))
+               (else                
+                (set! StartingIndex (+ StartingIndex 1))               
+                (nextMoveState))
+               )
+              )
+         )
+       (cond (newStateIndexFlag              
+              newStateIndex)
+             (else '#f)
+             )            
+       )
+     (nextMoveState)
+      )
+
+  (define Path (list (list InitialState InitialIndex)))
+  (define MaxDepth 11)
+  (define (SolveMissionaryCanaryProblem)
+    (define solution (DepthFirstSearch Path nextMove checkFinalState MaxDepth))
+    (set! Path  (list-ref solution 0))
+    (define solutionExists (list-ref solution 1))
+    (cond ((> (length Path) 1)
+           (display "\nSolution:")
+           (display Path)
+           (display "\n")
+          (display "\nEnter 'y' for next solution: \n")
+          (define userInput (read))
+          (cond ((equal? userInput 'y) (SolveMissionaryCanaryProblem))))
+          (else
+           (display "\nSorry!! Solution doesn't exist.")))
+       
+    
+    )
+  (SolveMissionaryCanaryProblem)
+ )
+
+
+(Missionary-cannibal 3 3)

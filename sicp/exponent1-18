@@ -1,0 +1,19 @@
+#lang racket
+(define (even? n)
+(= (remainder n 2) 0))
+
+(define (* a b)
+  (display "step-")
+(cond  ((= b 1) a)
+  ((even? b) (* (+ a a) (/ b 2)))
+      (else (+ a (* a (- b 1))))
+      )
+  )
+
+(define (multiply a b)
+(cond ((= a 0) 0)
+      ((= b 0) 0)
+      (else (* a b))
+))
+
+(multiply 2 1024)

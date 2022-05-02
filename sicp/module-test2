@@ -1,0 +1,5 @@
+#lang racket
+(require "moduleTest.rkt")
+
+(sample-sum 2 3)
+(sample-sum2 2 3)

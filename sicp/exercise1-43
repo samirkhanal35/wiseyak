@@ -1,0 +1,11 @@
+#lang racket
+(define square
+  (lambda (x) (* x x)))
+
+(define (repeated f a)
+  (cond ((> a 1) (compose f (repeated f (- a 1))))
+        (else f)
+        )
+  )
+
+((repeated square 2) 5)

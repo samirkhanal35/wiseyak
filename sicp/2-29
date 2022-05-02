@@ -1,0 +1,32 @@
+#lang racket
+
+(define (left-branch mobile)
+   (car mobile))
+
+(define (make-mobile left right)
+   (cons left right))
+
+(define (make-branch length structure)
+   (cons length structure))
+
+(define (right-branch mobile)
+   (cdr mobile))
+
+(define x (list (list 1 2) (list 3 4)))
+(define sample-tree (make-mobile (make-branch x x) (make-branch x x)))
+(display sample-tree) (newline)
+(display "\nleft branch:\n")
+(display (left-branch sample-tree))
+(newline)
+(display "\nright branch:\n")
+(display (right-branch sample-tree))
+(newline)
+(display "\nnew tree\n")
+(define new-tree (make-mobile (make-branch 10 x) (make-branch 12 sample-tree)))
+(display new-tree)
+(display "\nleft branch:\n")
+(display (left-branch new-tree))
+(newline)
+(display "\nright branch:\n")
+(display (right-branch new-tree))
+(newline)

@@ -1,0 +1,19 @@
+#lang racket
+(define (make-rectangle initial-point second-point third-point final-point) (cons (cons initial-point second-point) (cons third-point final-point)))
+(define (breadth-of-rectangle x) (abs (- (get-y-coordinate (car (car x))) (get-y-coordinate (cdr (car x))))))
+(define (get-x-coordinate x) (car x))
+(define (length-of-rectangle x) (abs (- (get-x-coordinate (car (car x))) (get-x-coordinate (cdr (cdr x))))))
+(define (get-y-coordinate x) (cdr x))
+(define (make-point x y) (cons x y))
+
+(define (area-of-rectangle x) (* (length-of-rectangle x) (breadth-of-rectangle x)))
+(define (perimeter-of-rectangle x) (* 2 (+ (length-of-rectangle x) (breadth-of-rectangle x) )))
+
+(define test-rectangle (make-rectangle (make-point 1 1) (make-point 1 10) (make-point 5 15) (make-point 5 6)) )
+(display "\nArea of test-rectangle:\n")
+(display (area-of-rectangle test-rectangle))
+(display "\nPerimeter of test-rectangle:\n")
+(display (perimeter-of-rectangle test-rectangle))
+
+
+

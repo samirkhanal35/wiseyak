@@ -1,0 +1,74 @@
+#lang racket
+(define (Eight-queens-problem queens count)
+  (display "\nInside Eight queens problem")(newline)
+  (display "queens: ")
+  (display queens) (newline)
+  (display "count: ")
+  (display count) (newline)
+  (cond 
+    ((< count 8)
+     (define lastPosition (LastQueenPosition queens))
+     (display "last queens position")(newline)
+     (display lastPosition) (newline)
+     (define newPosition (next-suitable-position lastPosition queens))
+     (append queens (list newPosition))
+     )
+         
+    )
+  )
+
+(define (LastQueenPosition queens)
+  (define lastIndex (- (length queens) 1))
+  (list-ref queens lastIndex))
+
+
+(define (suitable-position position queens)
+  (display "\nInside suitable position")
+  (newline)
+  (display "passed position:")
+  (display position) (newline)
+  (define row (car position))
+  (define column (car(cdr position)))
+  (display "row: ") 
+  (display row)(newline)
+  (display "column: ") 
+  (display column) (newline)
+  (cond
+    ((row-of-position position queens) '#f)
+    ((column-of-position position queens) '#f)
+    ((position-in-queens-moves position queens) '#f)
+    
+    )
+  )
+
+(define (row-of-position position queens) '#t)
+(define (column-of-position position queens) '#t)
+(define (position-in-queens-moves position queens) '#t)
+
+(define (next-suitable-position new-position queens)
+  (display "\nInside next suitable position") (newline)
+  (display "passed previous position") (newline)
+  (display new-position)
+  (define row (car new-position))
+  (define column (car(cdr new-position)))
+  (display "row: ") 
+  (display row)(newline)
+  (display "column: ") 
+  (display column) (newline)
+  
+  (cond
+    ((suitable-position new-position queens) new-position)
+    (else
+     (cond
+       ((< row 8) (if (< column 8) (next-suitable-position (list row (+ column 1)) queens) (next-suitable-position (list (+ row 1) 0) queens)))
+       (else '#f)
+       )
+     )
+    
+    )
+  )
+
+(define InitialState (list 0 0))
+(define MaxQueens 8)
+(define Queens (list InitialState))
+(Eight-queens-problem Queens 0)

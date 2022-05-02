@@ -1,0 +1,20 @@
+#lang racket
+(define (reverse items)
+(if (null? (cdr items))
+items
+ (append (reverse (cdr items)) (list (car items)))))
+
+(define (map proc items)
+(if (null? items)
+    null
+(cons (proc (car items))
+(map proc (cdr items)))))
+
+(define (deep-reverse x)
+  (define reversed-list (reverse x))
+  (map reverse reversed-list)
+  )
+
+(define x (list (list 1 2) (list 3 4)))
+(reverse x)
+(deep-reverse x)

@@ -1,0 +1,17 @@
+#lang racket
+(define (recursive-function n)
+  (if (< n 3) n (+ (recursive-function (- n 1))
+                   (* (recursive-function (- n 2)) 2)
+                   (* (recursive-function (- n 3)) 3))))
+
+(recursive-function 10)
+
+(define (iterative-function-lessthanthree n)
+  (if (< n 3) n (iterative-function-greater-equalstoThree n)))
+
+(define (iterative-function-greater-equalstoThree n)
+  (+ (iterative-function-lessthanthree (- n 1))
+     (* (iterative-function-lessthanthree (- n 2)) 2)
+     (* (iterative-function-lessthanthree (- n 3)) 3)))
+
+(iterative-function-lessthanthree 10)

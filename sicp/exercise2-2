@@ -1,0 +1,32 @@
+#lang racket
+(define (make-segment x y) (cons x y))
+(define (start-segment x) (car x))
+(define (get-x-coordinate x) (car x))
+(define (end-segment x) (cdr x))
+(define (get-y-coordinate x) (cdr x))
+(define (make-point x y) (cons x y))
+
+(define (midpoint-segment x)
+  (make-point
+   (/ (+
+       (get-x-coordinate (start-segment x))
+      (get-x-coordinate (end-segment x)))
+      2
+      )
+   (/ (+
+       (get-y-coordinate (start-segment x))
+      (get-y-coordinate (end-segment x)))
+      2
+      )
+   ))
+
+(define (print-point p)
+(newline)
+(display "(")
+(display (get-x-coordinate p))
+(display ",")
+(display (get-y-coordinate p))
+(display ")"))
+
+(define test-line-segment (make-segment (make-point 1 1) (make-point 5 5)))
+(print-point (midpoint-segment test-line-segment))

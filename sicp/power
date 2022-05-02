@@ -1,0 +1,6 @@
+#lang racket
+(define (power times x)
+  (if (> times 0) (* x (power (- times 1) x)) 1)        
+  )
+
+(power 3 4)

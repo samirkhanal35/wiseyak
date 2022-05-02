@@ -1,0 +1,25 @@
+#lang racket
+(define (square x ) (* x x))
+
+(define (power times x)
+  (if (> times 0) (* x (power (- times 1) x)) 1)        
+  )
+
+(define (expmod base exp m)
+(cond ((= exp 0) 1)
+(else
+(remainder
+(power exp base)
+m))))
+
+(define (fermat-test n)
+(define (try-it a)
+(= (expmod a n n) a))
+(try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+(cond ((< times 0) true)
+((fermat-test n) (fast-prime? n (- times 1)))
+(else false)))
+
+(fast-prime? 13 7)

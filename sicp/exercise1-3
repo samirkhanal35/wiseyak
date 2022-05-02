@@ -1,0 +1,20 @@
+#lang racket
+(define (square x) (* x x))
+(define (sum-of-squares s d) (+ (square s) (+ (square d))))
+(define (greatest-two a b c)
+  (cond ((and (> a b) (> b c)) (sum-of-squares a b))
+        ((and (< a b) (< b c)) (sum-of-squares c b))
+        (else (sum-of-squares c a))
+        )
+  )
+(greatest-two 5 10 9)
+(define (a-plus-abs-b a b)
+((if (> b 0) + -) a b))
+
+(a-plus-abs-b 10 -10)
+
+(define (p) (p))
+(define (test x y)
+(if (= x 0) 0 y))
+
+(test 1 (p) )

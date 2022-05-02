@@ -1,0 +1,22 @@
+#lang racket
+(define (square-list-iter items)
+(if (null? items)
+null
+(cons (square (car items)) (square-list-iter (cdr items)) )))
+
+(define (square x) (* x x))
+
+(define (map proc items)
+(if (null? items)
+    null
+(cons (proc (car items))
+(map proc (cdr items)))))
+
+
+(define (square-list-map items)
+(map (lambda(x) (* x x)) items ))
+
+
+
+(square-list-map (list 1 2 3 4)) (newline)
+(square-list-iter (list 1 2 3 4))

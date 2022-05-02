@@ -1,0 +1,8 @@
+#lang racket
+(define (nth-fibonacci n)
+  (cond ((= n 0) 0)
+        ((= n 1) 1)
+        ((> n 1) (+ (nth-fibonacci (- n 1)) (nth-fibonacci (- n 2))))
+   ))
+
+(nth-fibonacci 7)

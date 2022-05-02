@@ -1,0 +1,57 @@
+#lang racket
+(define (condition-test)
+  (define condition '#t)
+  (if condition (display "The value is True. It worked !!") (display "It didn't work.!!")))
+
+(condition-test)
+
+(define test-value 12)
+(if test-value (display "\nIt worked\n") ("It didn't work"))
+(define range (list test-value))
+(set! range (append range (list 3 4)))
+(display range)
+
+(display "\n")
+
+(for ([i '(1 2 3)]
+        [j "abc"]
+        #:break (not (odd? i))
+        [k #(#t #f)])
+    (display (list i j k)))
+
+(display "\n")
+
+(for ([i range]
+        [j "abc"]
+        #:break (not (odd? i))
+        [k #(#t #f)])
+    (display (list i j k)))
+
+(define (add x y)
+  (define sum 0)
+   (set! sum (+ x y))
+   (display sum)
+   )
+
+(add 2 3)
+
+(define (get-rangess start-value end-value)     
+      (define rangess (list (list (list start-value) 0)))
+      (define (rangess-list)
+        (cond ((< start-value (+ end-value 1))
+               (set! start-value (+ start-value 1))
+               (set! rangess (append rangess (list (list (list start-value start-value) 0))))
+               (rangess-list))
+              (else rangess)
+            ))
+      (rangess-list)
+      )
+
+(display (get-rangess 0 5))
+(display (length (get-rangess 0 5)))
+(display "\n")
+(display (* 5 -1))
+(display "\n")
+(define userInput (read))
+(display "\nUserInput:")
+(display userInput)

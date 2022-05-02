@@ -1,0 +1,9 @@
+#lang racket
+(define (nth-root x nth)
+  (fixed-point 
+    ((repeated average-damp (floor (log nth 2))) 
+    (lambda (y) 
+      (/ x (power y (- nth 1)))))
+   1.0))
+
+(display (nth-root 2 258))

@@ -1,0 +1,66 @@
+
+<!-- saved from url=(0048)https://www.cs.utexas.edu/~novak/schemevscl.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><title>Scheme vs. Common Lisp</title></head><body data-new-gr-c-s-check-loaded="14.1055.0" data-gr-ext-installed="">
+<h2>Scheme vs. Common Lisp</h2>
+
+Scheme and Common Lisp use different names for some of the basic
+system functions.  Many Lisp programs can be translated to the other
+dialect simply by changing these names (or by providing the existing
+names as macros or functions).  Compatibility packages exist to allow
+programs in one dialect to run in the other dialect.
+<p>
+The following table gives correspondences between Scheme functions and
+the equivalent Common Lisp functions.
+</p><p>
+<table border="3" cellpadding="10" cellspacing="0">
+<tbody><tr><td><b>Scheme:</b> </td><td><b>Common Lisp:</b> </td></tr>
+<tr><td><tt>(define (fn args ...) code)</tt></td>
+    <td><tt>(defun fn (args ...) code)</tt></td></tr>
+<tr><td><tt>begin</tt></td><td><tt>progn</tt></td></tr>
+<tr><td><tt>set!</tt></td><td><tt>setq</tt></td></tr>
+<tr><td><tt>eq?</tt></td><td><tt>eq</tt></td></tr>
+<tr><td><tt>eqv?</tt></td><td><tt>eql</tt></td></tr>
+<tr><td><tt>equal?</tt></td><td><tt>equal</tt></td></tr>
+<tr><td><tt>number?</tt></td><td><tt>numberp</tt></td></tr>
+<tr><td><tt>zero?</tt></td><td><tt>zerop</tt></td></tr>
+<tr><td><tt>pair?</tt></td><td><tt>consp</tt></td></tr>
+<tr><td><tt>null?</tt></td><td><tt>null</tt></td></tr>
+<tr><td><tt>display</tt></td><td><tt>princ</tt></td></tr>
+<tr><td><tt>write</tt></td><td><tt>prin1</tt></td></tr>
+<tr><td><tt>newline</tt></td><td><tt>terpri</tt></td></tr>
+<tr><td><tt>(list-tail lst n)</tt></td><td><tt>(nthcdr n lst)</tt></td></tr>
+<tr><td><tt>(list-ref lst n)</tt></td><td><tt>(nth n lst)</tt></td></tr>
+<tr><td><tt>subset?</tt></td><td><tt>subsetp</tt></td></tr>
+<tr><td><tt>map</tt></td><td><tt>mapcar</tt></td></tr>
+<tr><td><tt>for-each</tt></td><td><tt>mapc</tt></td></tr>
+<tr><td><tt>vector-ref</tt></td><td><tt>aref</tt></td></tr>
+<tr><td><tt>vector-set!</tt></td><td><tt>(setf (aref ...) val)</tt></td></tr>
+<tr><td><tt>substring</tt></td><td><tt>subseq</tt></td></tr>
+<tr><td><tt>#t</tt></td><td><tt>t</tt></td></tr>
+<tr><td><tt>#f</tt></td><td><tt>nil</tt></td></tr>
+<tr><td><tt>'()</tt></td><td><tt>'()</tt> or <tt>nil</tt></td></tr>
+</tbody></table>
+</p><p>
+The following table lists standard Common Lisp functions that are
+provided in the file <tt>initdr.scm</tt>.
+</p><p>
+<table border="3" cellpadding="10" cellspacing="0">
+<tbody><tr><td><tt>dotimes</tt></td></tr>
+<tr><td><tt>dolist</tt></td></tr>
+<tr><td><tt>intersection</tt></td></tr>
+<tr><td><tt>union</tt></td></tr>
+<tr><td><tt>set-difference</tt></td></tr>
+<tr><td><tt>copy-list</tt></td></tr>
+<tr><td><tt>subset</tt></td></tr>
+<tr><td><tt>every</tt></td></tr>
+<tr><td><tt>some</tt></td></tr>
+<tr><td><tt>copy-tree</tt></td></tr>
+<tr><td><tt>subst</tt></td></tr>
+<tr><td><tt>sublis</tt></td></tr>
+<tr><td><tt>nconc</tt></td></tr>
+<tr><td><tt>nreverse</tt></td></tr>
+</tbody></table>
+
+
+
+</p></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

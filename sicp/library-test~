@@ -1,0 +1,8 @@
+#lang racket
+(library (more-setops)
+  (export quoted-set set-cons set-remove)
+  (import (list-tools setops) (rnrs base) (rnrs syntax-case))
+
+  (define sample-sum
+    (lambda (x y)
+      (+ x y))))

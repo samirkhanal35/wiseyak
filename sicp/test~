@@ -1,0 +1,6 @@
+#lang racket
+(define condition (#t))
+(define condition-test (
+                        if (condition) (display "The value is True. It worked !!") (display "It didn't work.!!")))
+
+(condition-test)

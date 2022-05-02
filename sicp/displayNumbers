@@ -1,0 +1,9 @@
+#lang racket
+                      
+(define (displayFromTo startValue endValue)
+  (cond((< startValue endValue) (display startValue)(display "\n")(displayFromTo (+ startValue 1) endValue) )
+    )
+  )
+
+
+(displayFromTo 0 10)
