@@ -123,8 +123,6 @@
   
   )
 
-
-
 (define (accumulate op initial sequence)
   ;(display "\nInside accumulate")
    (if (null? sequence)
@@ -143,8 +141,25 @@
 (define Z '(summation (* w x) n))
 (define Z0 '(* w x) )
 
-(define all-functions (list 'Af Ef E E0 Z Z0))
+(define all-functions (list 'Af 'Ef 'E 'E0 'Z 'Z0))
 
+(define (check-list-element list1 element)
+(define (check list1)
+  (cond
+    ((null? list1) '#f)
+    ((eq? (car list1) element) (car list1))
+    (else (check (cdr list1)))
+    ))
+  (check list1)
+  )
+
+(define (make-fraction numerator denominator)
+  (display "\nInside make-fraction")(newline)
+  (display "passed numerator: ")
+  (display numerator) (newline)
+  (display "passed denominator: ")
+  (display denominator) (newline)
+  '(/ numerator denominator))
 
 (define (chain-rule numerator-function denominator-function error)
   (display "numerator function :")
@@ -158,6 +173,63 @@
 
   (display "all functions:")
   (display all-functions) (newline)
+
+  (define whole-chain-rule (list '*))
+
+ 
+
+  (define (find-all-derivatives numerator-elements)
+    (display "inside find all derivatives of numerator elements")(newline)
+    (cond ((check-list-element numerator-elements denominator-function)
+           (display "\ncondition passed")(newline)
+           (set! whole-chain-rule (append-list whole-chain-rule (deriv numerator-function denominator-function))))
+          (else
+           (display "\nelse condition")(newline)
+           (define current-denominator null)
+           (map
+            (lambda(x)
+              (cond ((check-list-element numerator-elements x)
+                     (set! current-denominator x)))
+              )
+            all-functions)
+           (display "after searching for denominator: ")
+           (display current-denominator) (newline)
+           
+           (set! whole-chain-rule (append-list whole-chain-rule (deriv numerator-function current-denominator)))
+           (display "after setting whole chain rule: ")
+           (display whole-chain-rule) (newline)
+
+           (display "current-denominator : next-numerator :")
+           (display current-denominator) (newline)
+           (cond
+                ((eq? current-denominator 'Af) (set! current-denominator Af))
+                ((eq? current-denominator 'Ef) (set! current-denominator Ef))
+                ((eq? current-denominator 'E) (set! current-denominator E))
+                ((eq? current-denominator 'E0) (set! current-denominator E0))
+                ((eq? current-denominator 'Z) (set! current-denominator Z))
+                ((eq? current-denominator 'Z0) (set! current-denominator Z0)))
+           
+           (display "set current-denominator: ")
+           (display current-denominator) (newline)
+           
+           (define current-denominator-elements (fringe current-denominator))
+           
+           (display "\nCurrent denominator elements: ")
+           (display current-denominator-elements) (newline)
+           
+           (find-all-derivatives current-denominator-elements)       
+           )
+           
+          )
+    (display "\nExecute gradient using whole chain rule ")(newline)
+    (display "whole chain rule: ")
+    (display whole-chain-rule)(newline)
+    
+    )
+
+  (if (check-list-element numerator-elements denominator-function) (deriv (make-fraction numerator-function denominator-function))
+      (find-all-derivatives numerator-elements))
+  
   error
   )
 
@@ -173,7 +245,6 @@
   
   (chain-rule numerator-function denominator-function error)
   )
-
 
 
 (define (backward-propagation outputs target-outputs all-outputs neurons weights model-length learning-rate)
@@ -194,11 +265,11 @@
            
            (cond
              ((= layer-count 1)
-              (set! layer-gradient (gradient E0 Z0 layer-count layer-weight (list-ref z 0) error))
+              (set! layer-gradient (gradient E0 'w layer-count layer-weight (list-ref z 0) error))
               (set! updated-weight (append-list updated-weight (map (lambda(x) (- x (* learning-rate layer-gradient))) layer-weight)))              
               )
              ((= layer-count model-length)
-              (set! layer-gradient (gradient Ef Z layer-count layer-weight (list-ref z (- layer-count 1)) error))
+              (set! layer-gradient (gradient Ef 'w layer-count layer-weight (list-ref z (- layer-count 1)) error))
               ;(display "\nAfter layer-gradient:")
               ;(display layer-gradient)
               (set! updated-weight (append-list updated-weight (map (lambda(x) (- x (* learning-rate layer-gradient))) layer-weight)))
@@ -207,7 +278,7 @@
               (update-weight (list-ref weights (- layer-count 2)) (- layer-count 1))
               )
              ((> layer-count 0)
-              (set! layer-gradient (gradient E Z layer-count layer-weight (list-ref z (- layer-count 1)) error))
+              (set! layer-gradient (gradient E 'w layer-count layer-weight (list-ref z (- layer-count 1)) error))
               (set! updated-weight (append-list updated-weight (map (lambda(x) (- x (* learning-rate layer-gradient))) layer-weight)))
               (update-weight (list-ref weights (- layer-count 2)) (- layer-count 1))
               )
