@@ -37,7 +37,9 @@
   (define NextState  0)    
     
    (cond (NextStateIndex        
-        (set! Path (append Path (list NextStateIndex)))        
+        (set! Path (append Path (list NextStateIndex)))
+        (display "updated Path: ")
+        (display Path) (newline)
         (set! prevIndex (firstIndex))      
         (set! NextState (list-ref NextStateIndex 0))
         (cond
@@ -66,8 +68,7 @@
 
 (define (sudoku-solver sudoku-problem)
   (display "\n Inside sudoku-solver") (newline)
-  (display "Passed sudoku problem:")
-  (display sudoku-problem) (newline)   
+  
 
   (define (find-next-empty-position i j)
     (display "\nInside find next empty position")(newline)
@@ -75,10 +76,9 @@
       (display i) (newline)
       (display "value of j: ")
       (display j) (newline)
-      (display "sudoku solution list: ")
-      (display sudoku-solution) (newline)
+      
     
-    (define next-expty-position null)
+    
     (define (next-i-j-values)
       (cond ((and (< i 9) (< j 8))
              (set! j (+ j 1)))
@@ -88,17 +88,21 @@
             )
       )
     (next-i-j-values)
-    (define (find-i-and-jth-value i j)
-      (display "\nInside find i and j") (newline)      
+    (define (find-i-and-jth-value)
+      (display "\nInside find i and j") (newline)
+      (display "i: ")
+      (display i) (newline)
+      (display "j: ")
+      (display j) (newline)
       (if (eq? (list-ref (list-ref sudoku-solution i) j) 'nil)
           (list i j)
           (cond
-            ((and (< i 9) (< j 9)) (next-i-j-values) (find-i-and-jth-value i j))
+            ((and (< i 9) (< j 9)) (next-i-j-values) (find-i-and-jth-value))
             
             (else '#f)
             ))
       )
-    (find-i-and-jth-value i j)
+    (find-i-and-jth-value)
     )
  
    (define (CheckLegality StateIndex)
@@ -177,16 +181,16 @@
      (display "\nInside Check Final State")
      (display "\nPassed state: ")
      (display state) (newline)
-     (if (find-next-empty-position (car state) (cadr state))
+     (cond ((find-next-empty-position (car state) (cadr state))
+            (display "\nfind-next empty position returned true in checkFinal state")(newline)         
          '#f
          '#t
-         )
+         ))
      )
 
    (define (nextMove CurrentState prevIndex)
-     (display "\nInside NextMove")
-     (display "\nSudoku solution: ")
-     (display sudoku-solution) (newline)
+     (display "\nInside NextMove")(newline)
+     
      (display "passed CurrentState: ")
      (display CurrentState) (newline)
     
@@ -198,7 +202,7 @@
      (define column-position (cadr CurrentState))
      
      (define (nextMoveState)
-       (cond ((< StartingIndex maxMoves)            
+       (cond ((< StartingIndex (+ maxMoves 1))            
                             
               (define newposition (find-next-empty-position row-position column-position))
               (display "\nNew empty position")
@@ -208,7 +212,8 @@
 
               (display "\nNew position with value")
               (display newStateIndex) (newline)
-        (cond  ((CheckLegality newStateIndex)                
+        (cond  ((CheckLegality newStateIndex)
+                (display "\nPassed Legality Test") (newline)
                 (set! newStateIndexFlag '#t))
                (else                
                 (set! StartingIndex (+ StartingIndex 1))               
@@ -217,7 +222,7 @@
               )
          )
        (cond (newStateIndexFlag
-              ;(set! sudoku-solution (update-list-position sudoku-solution newStateIndex))
+              (set! sudoku-solution (update-list-position sudoku-solution newStateIndex))
               newStateIndex)
              (else '#f)
              )            
@@ -232,6 +237,11 @@
     )
 
   (define (append-to-list list1 to-append-list)
+    (display "\nInside append to list")
+    (display "passed list")
+    (display list1) (newline)
+    (display "passed append to list: ")
+    (display to-append-list) (newline)
   (cond
     ((null? list1) (list to-append-list))
     (else (append list1 to-append-list)))
@@ -259,8 +269,7 @@
 
   (define (update-list-position sudoku-solution newStateIndex)
     (display "\nInside update list position") (newline)
-    (display "passed sudoku-solution: ")
-    (display sudoku-solution) (newline)
+    
     (display "passed newstateIndex: ")
     (display newStateIndex) (newline)
     
@@ -272,6 +281,8 @@
     (display row-position) (newline)
     (display "column position: ")
     (display column-position) (newline)
+    (display "to update value: ")
+    (display newValue) (newline)
 
     (define row (length sudoku-solution))
     (define column (length (car sudoku-solution)))
@@ -282,61 +293,49 @@
     (display column) (newline)
     
 
-    (define (get-updated-column-value column-list column-count)
+    (define (get-updated-column-value column-list)
       (display "\nInside get updated column value") (newline)
+      (display "passed column list: ")
+      (display column-list) (newline)     
       
-      (define column-list-values null)
-      (define count 1)
-      
-      (define (get-list-values count)
-        (cond
-          ((= count column-count)
-           (cond ((eq? column-count column-position)
-               (set! column-list-values (append-to-list column-list-values newValue))
-               (get-list-values (+ count 1))
-                              
+      (define count 0)
+      (map
+       (lambda(x)
+         (cond ((eq? count column-position)
+               
+               (set! count (+ count 1))
+               newValue
                )
                  (else
-                  (set! column-list-values (append-to-list column-list-values (list-ref column-list)))
-                  (get-list-values (+ count 1))
-                  )
-                 )
-           )
-          (else
-           column-list-values)
-          )
+                  (set! count (+ count 1))
+                  x
+                  ))
          )
-      (get-list-values count)
+       column-list)      
         )
       
 
-    (define row-count 1)
+    (define row-count 0) 
 
-    (map (lambda(x)
+     (map (lambda(x)
            (cond ((eq? row-count row-position)
-               (get-updated-column-value x row-count)               
+                  (set! row-count (+ row-count 1))
+                (get-updated-column-value x)               
                )
-                 (else (set! row-count (+ row-count 1))
-                x))
+                 (else
+                  (set! row-count (+ row-count 1))
+                  x
+                  ))
            ) sudoku-solution)    
+    
     )
 
   
   
   (define (SolveSudokuProblem)
     
-    (define solution (DepthFirstSearch Path nextMove checkFinalState MaxDepth))
-    (set! Path  (list-ref solution 0))
-    (define solutionExists (list-ref solution 1))
-    (cond ((> (length Path) 1)
-           (display "\nSolution:")
-           (display Path)
-           (display "\n")
-          (display "\nEnter 'y' for next solution: \n")
-          (define userInput (read))
-          (cond ((equal? userInput 'y) (SolveSudokuProblem))))
-          (else
-           (display "\nSorry!! Solution doesn't exist.")))
+     (DepthFirstSearch Path nextMove checkFinalState MaxDepth)
+    
        
     
     )
@@ -347,12 +346,12 @@
    (define Possiblemoves (list 1 2 3 4 5 6 7 8 9))
    (define maxMoves 9)
    ;(define InitialIndex 0)
-  (define InitialState (nextMove (list 0 0) -1 ))
+  (define InitialState (nextMove (list 0 0) 0 ))
    
 
   ;(define Path (list (list InitialState InitialIndex)))
   (define Path (list InitialState))
-  (define MaxDepth 2)
+  (define MaxDepth 10)
 
   (display "InitialState: ")
   (display InitialState) (newline)
@@ -366,15 +365,26 @@
 
 
 (define sudoku-problem
-  (list (list 4 'nil 'nil 'nil 'nil 'nil 'nil 2 'nil)
-        (list 'nil 'nil 'nil 5 1 'nil 6  'nil  7 )
-        (list 'nil 'nil 5 'nil 2 7 'nil 'nil 'nil)
-        (list 3 'nil 6 'nil 'nil 'nil 9 7 'nil)
-        (list 5 'nil 'nil 'nil 'nil 3 4 'nil 2)
-        (list 'nil 'nil 7 1 'nil 'nil 'nil 'nil 'nil)
-        (list 'nil 9 4 6 'nil 'nil 'nil 'nil 'nil )
-        (list 'nil 2 8 4 3 1 7 5 'nil)
-        (list 'nil 5 3 'nil 7 9 8 6 4)))
+  (list (list 3 1 6 'nil 7 8 4 9 2)
+        (list 5 2 9 1 3 4 7 6 8)
+        (list 4 8 7 6 'nil 9 5 3 1)
+        (list 2 6 3 4 1 5 9 8 7)
+        (list 9 7 4 8 6 3 1 2 5)
+        (list 8 5 1 7 9 2 6 4 3)
+        (list 1 3 8 9 4 7 2 5 6)
+        (list 6 9 2 3 5 1 8 7 4)
+        (list 7 4 5 2 8 6 3 1 9)))
+
+(define result
+  (list (list 3 1 6 5 7 8 4 9 2)
+        (list 5 2 9 1 3 4 7 6 8)
+        (list 4 8 7 6 2 9 5 3 1)
+        (list 2 6 3 4 1 5 9 8 7)
+        (list 9 7 4 8 6 3 1 2 5)
+        (list 8 5 1 7 9 2 6 4 3)
+        (list 1 3 8 9 4 7 2 5 6)
+        (list 6 9 2 3 5 1 8 7 4)
+        (list 7 4 5 2 8 6 3 1 9)))
 
 
 (sudoku-solver sudoku-problem)

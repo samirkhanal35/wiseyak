@@ -192,7 +192,7 @@
     
      (define newStateIndex 0)
      (define newStateIndexFlag '#f)
-     (define StartingIndex (+ prevIndex 1))
+     (define StartingIndex prevIndex)
 
      (define row-position (car CurrentState))
      (define column-position (cadr CurrentState))
@@ -204,7 +204,7 @@
               (display "\nNew empty position")
               (display newposition) (newline)
               
-              (set! newStateIndex (list newposition StartingIndex))
+              (set! newStateIndex (list newposition (+ StartingIndex 1)))
 
               (display "\nNew position with value")
               (display newStateIndex) (newline)

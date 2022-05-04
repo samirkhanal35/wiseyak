@@ -1,0 +1,22 @@
+#lang racket
+(define (test)
+(define count 0)
+  (define column-list (list 'nil 5 3 'nil 7 9 8 6 4))
+  (define column-position 2)
+  (define newValue 1)
+      (map
+       (lambda(x)
+         (cond ((eq? count column-position)
+               
+               (set! count (+ count 1))
+               newValue
+               )
+                 (else
+                  (set! count (+ count 1))
+                  x
+                  ))
+         )
+       column-list)
+  )
+
+(test)
