@@ -1,0 +1,24 @@
+#lang racket
+(require "ML2.rkt")
+
+(define model (DNN (list
+      (Layer 2)
+      (Layer 4)
+      (Layer 2))))
+
+(define output-categories (list 0 1))
+(display "model") (newline)
+(display model) (newline)
+(define input-data (list 1 1))
+
+(define train-data (list (list 0 0) (list 0 1) (list 1 0) (list 1 1)))
+(define train-data2 (list (list 0 0) (list 0 1) ))
+
+(define destination (list 0 0 0 1))
+(define destination2 (list 0 0))
+
+(define epoch 2)
+(define learning-rate 0.1)
+
+(Fit model train-data destination epoch output-categories learning-rate)
+;(Predict model input-data)

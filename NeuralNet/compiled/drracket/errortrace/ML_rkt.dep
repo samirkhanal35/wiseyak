@@ -1,0 +1,1 @@
+("8.4" ta6le ("7dc714777ae22c9c0e1b5f08aba4e48b74c461bb" . "2a1460f902c72bb9171a99f2fc4315404a38a3de") #"/home/samir/Documents/study and research /study/sicp/NeuralNet/derivative.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
