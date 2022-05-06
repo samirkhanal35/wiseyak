@@ -14,8 +14,13 @@
   (define (RemoveLastState)  
    (define lastIndex (- (length Path) 1))
    (define lastStateIndex (list-ref Path lastIndex))
-    (define updated-sudoku (update-list-position lastStateIndex))
-   (set! Path (reverse (remove lastStateIndex (reverse Path))))    
+    ;(display "befoer last state removal: ")
+    ;(display Path) (newline)
+   (set! Path (reverse (remove lastStateIndex (reverse Path))))
+    ;(display "after last state removal: ")
+    ;(display Path) (newline)
+    (define newStateIndex (list (car lastStateIndex) 'nil))
+   (update-list-position newStateIndex)
    (list-ref lastStateIndex 1)
    )
   
@@ -24,8 +29,12 @@
    )
   
   (define prevIndex (firstIndex))
-  (define Branch-pruned '#f)  
-  (define (DFS-Inner-Loop)    
+  (define Branch-pruned '#f)
+  
+  (define (DFS-Inner-Loop)
+    ;(display Path)(newline)
+    ;(display "\nPath Length: ")
+    ;(display (length Path)) (newline) (newline)
   (define LastState (getLast-State))    
   (define NextStateIndex (nextMove LastState prevIndex))
   (define NextState  0)    
@@ -64,6 +73,7 @@
     (define row-position (car (car newStateIndex)))
     (define column-position (cadr (car newStateIndex)))    
     (define newValue (cadr newStateIndex))
+    
 
     (define row (length sudoku-solution))
     (define column (length (car sudoku-solution)))    
@@ -85,7 +95,8 @@
         )     
 
     (define row-count 0) 
-     (map (lambda(x)
+     
+    (set! sudoku-solution (map (lambda(x)
            (cond ((eq? row-count row-position)
                   (set! row-count (+ row-count 1))
                 (get-updated-column-value x)               
@@ -94,11 +105,14 @@
                   (set! row-count (+ row-count 1))
                   x
                   ))
-           ) sudoku-solution)    
+           ) sudoku-solution))
     
     )
   
   (define (find-next-empty-position i j)
+    (set! i 0)
+    (set! j 0)
+    
     (define (next-i-j-values)
       (cond ((and (< i 9) (< j 8))
              (set! j (+ j 1)))
@@ -236,7 +250,9 @@
        (cond ((< StartingIndex (+ maxMoves 1))                           
               (define newposition (find-next-empty-position row-position column-position))              
               (set! newStateIndex (list newposition StartingIndex))
-        (cond  ((CheckLegality newStateIndex)               
+              
+        (cond  ((CheckLegality newStateIndex)
+                ;(display "\nPassed Legality Check") (newline)
                 (set! newStateIndexFlag '#t))
                (else                
                 (set! StartingIndex (+ StartingIndex 1))               
@@ -245,7 +261,7 @@
               )
          )
        (cond (newStateIndexFlag
-              (set! sudoku-solution (update-list-position newStateIndex))
+              (update-list-position newStateIndex)
               newStateIndex)
              (else '#f)
              )            
@@ -261,35 +277,111 @@
    (define Possiblemoves (list 1 2 3 4 5 6 7 8 9))
    (define maxMoves 9)
    (define InitialIndex 0)
-   (define InitialState (nextMove (list 0 0) InitialIndex))   
+   ;(define InitialState (nextMove (list 0 0) InitialIndex))
+  (define InitialState (list (list 0 0) (list-ref (list-ref sudoku-solution 0) 0)))
    (define Path (list InitialState))
-   (define MaxDepth 81)
+   (define MaxDepth 1000)
   
   (SolveSudokuProblem)
  )
 
 
-(define sudoku-problem
+(define sudoku-problem-world-hardest
+  ;world hardest problem
+  (list (list  8   'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil)
+        (list 'nil 'nil  3    6   'nil 'nil 'nil 'nil 'nil)
+        (list 'nil  7   'nil 'nil  9   'nil  2   'nil 'nil)
+        (list 'nil  5   'nil 'nil 'nil  7   'nil 'nil 'nil)
+        (list 'nil 'nil 'nil 'nil  4    5    7   'nil 'nil)
+        (list 'nil 'nil 'nil  1   'nil 'nil 'nil  3   'nil)
+        (list 'nil 'nil  1   'nil 'nil 'nil 'nil  6    8)
+        (list 'nil 'nil  8    5   'nil 'nil 'nil  1   'nil)
+        (list 'nil  9   'nil 'nil 'nil 'nil  4   'nil 'nil)))
+
+(define sudoku-problem-easiest
   (list (list 3 'nil 6 'nil 7 8 4 9 'nil)
         (list 5 'nil 9 1 3 'nil 7 6 8)
         (list 4 'nil 7 6 'nil 9 5 3 'nil)
         (list 2 'nil 3 4 1 5 9 8 7)
         (list 9 'nil 4 8 6 'nil 1 2 5)
-        (list 8 'nil 1 7 9 2 6 4 'nil)
+        (list 8 'nil 1 7 'nil 2 6 4 'nil)
         (list 1 'nil 8 9 4 7 2 5 6)
         (list 6 'nil 'nil 3 5 1 8 7 4)
         (list 'nil 'nil 5 2 8 6 3 'nil 9)))
 
-(define result
-  (list (list 3 1 6 5 7 8 4 9 2)
-        (list 5 2 9 1 3 4 7 6 8)
-        (list 4 8 7 6 2 9 5 3 1)
-        (list 2 6 3 4 1 5 9 8 7)
-        (list 9 7 4 8 6 3 1 2 5)
-        (list 8 5 1 7 9 2 6 4 3)
-        (list 1 3 8 9 4 7 2 5 6)
-        (list 6 9 2 3 5 1 8 7 4)
-        (list 7 4 5 2 8 6 3 1 9)))
+(define sudoku-problem-easy
+  (list (list  9   'nil 'nil 1    3    'nil 'nil 8    'nil)
+        (list 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil 7)
+        (list 8    'nil 'nil 7    6    4    9    1    2)
+        (list 6    'nil 'nil 'nil 'nil 9    1    'nil 8)
+        (list 5    'nil 3    8    7    'nil 6    'nil 9)
+        (list 'nil 'nil 'nil 'nil 5    'nil 'nil 7    4)
+        (list 'nil 1    9    4    'nil 'nil 'nil 'nil 5)
+        (list 'nil 'nil 'nil 9    'nil 'nil 2    4    3)
+        (list 'nil 'nil 2    6    8    3    7    'nil 'nil)))
+
+(define sudoku-problem-medium
+  (list (list 6    5    'nil 'nil 'nil 'nil 4    7    9)
+        (list 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil 8)
+        (list 7    'nil 3    'nil 'nil 'nil 'nil 'nil 'nil)
+        (list 'nil 1    'nil 'nil 4    3    'nil 2    6)
+        (list 9    'nil 'nil 1    7    'nil 'nil 4    'nil)
+        (list 'nil 3    'nil 6    'nil 'nil 'nil 'nil 'nil)
+        (list 5    'nil 'nil 'nil 2    4    'nil 'nil 3)
+        (list 'nil 'nil 4    'nil 1    'nil 6    'nil 'nil)
+        (list 1    7    9    3    'nil 'nil 'nil 'nil 'nil)))
+
+(define sudoku-problem-hard
+  (list (list 'nil 4    'nil 9    'nil 'nil 'nil 2    'nil)
+        (list 'nil 1    'nil 'nil 'nil 7    9    'nil 'nil)
+        (list 'nil 'nil 'nil 3    2    'nil 'nil 'nil 'nil)
+        (list 8    'nil 'nil 'nil 6    3    'nil 7    'nil)
+        (list 3    'nil 'nil 'nil 'nil 'nil 2    'nil 'nil)
+        (list 6    'nil 'nil 'nil 'nil 4    5    'nil 'nil)
+        (list 4    'nil 'nil 'nil 'nil 9    'nil 'nil 8)
+        (list 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil)
+        (list 'nil 5    'nil 'nil 'nil 6    7    'nil 'nil)))
+
+(define sudoku-problem-expert
+  (list (list 9    'nil 'nil 'nil 2    'nil 'nil 'nil 'nil)
+        (list 'nil 8    'nil 'nil 1    'nil 'nil 'nil 4)
+        (list 'nil 'nil 'nil 'nil 3    'nil 'nil 'nil 'nil)
+        (list 'nil 'nil 4    7    'nil 'nil 1    3    'nil)
+        (list 'nil 2    'nil 'nil 'nil 'nil 'nil 'nil 6)
+        (list 'nil 'nil 'nil 4    'nil 9    'nil 'nil 8)
+        (list 7    3    'nil 'nil 'nil 'nil 2    6    'nil)
+        (list 'nil 'nil 'nil 'nil 'nil 3    'nil 'nil 'nil)
+        (list 6    'nil 1    'nil 'nil 'nil 4    'nil 'nil)))
+
+(define sudoku-problem-evil
+  (list (list 'nil 7    'nil 'nil 'nil 'nil 'nil 8    'nil)
+        (list 3    'nil 'nil 'nil 5    9    6    'nil 'nil)
+        (list 'nil 'nil 'nil 4    'nil 'nil 'nil 'nil 'nil)
+        (list 'nil 'nil 'nil 2    'nil 'nil 1    'nil 'nil)
+        (list 4    'nil 'nil 6    'nil 'nil 'nil 'nil 'nil)
+        (list 'nil 3    'nil 'nil 4    1    'nil 'nil 7)
+        (list 'nil 'nil 'nil 'nil 'nil 2    'nil 'nil 'nil)
+        (list 5    'nil 'nil 'nil 1    3    9    'nil 'nil)
+        (list 'nil 'nil 9    'nil 'nil 'nil 'nil 'nil 6)))
 
 
-(sudoku-solver sudoku-problem)
+(display "Easiest sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-easiest)
+
+(display "Easy sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-easy)
+
+(display "Medium sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-medium)
+
+(display "Hard sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-hard)
+
+(display "Expert sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-expert)
+
+(display "Evil sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-evil)
+
+(display "Worlds Hardest sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-world-hardest)
