@@ -110,8 +110,7 @@
     )
   
   (define (find-next-empty-position i j)
-    (set! i 0)
-    (set! j 0)
+    
     
     (define (next-i-j-values)
       (cond ((and (< i 9) (< j 8))
@@ -121,7 +120,12 @@
              (set! j 0))
             )
       )
-    (next-i-j-values)
+
+    (cond ((or (> i 0) (> j 0))
+           (set! i 0)
+           (set! j 0)
+           (next-i-j-values)))
+    
     (define (find-i-and-jth-value)
       
       (cond
