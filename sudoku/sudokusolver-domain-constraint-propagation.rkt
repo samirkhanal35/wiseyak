@@ -66,8 +66,7 @@
     
     (define row-position (car (car newStateIndex)))
     (define column-position (cadr (car newStateIndex)))    
-    (define newValue (cadr newStateIndex))
-    
+    (define newValue (cadr newStateIndex))    
 
     (define row (length sudoku-solution))
     (define column (length (car sudoku-solution)))    
@@ -230,8 +229,7 @@
           )
          '#f
          '#t
-         )
-     
+         )     
      )
 
   (define (get-next-move newposition prevIndex)
@@ -310,8 +308,7 @@
 
               (cond
                 (newStartingIndex
-                   (set! newStateIndex (list newposition newStartingIndex))
-              
+                   (set! newStateIndex (list newposition newStartingIndex))              
               
         (cond  ((CheckLegality newStateIndex)                
                 (set! newStateIndexFlag '#t))
@@ -320,10 +317,7 @@
                 (nextMoveState))
                )                 
                  )
-
-                )
-              
-            
+                )           
               )
          )
        (cond (newStateIndexFlag
@@ -339,8 +333,7 @@
   (define (update-all-possible-moves newStateIndex)    
     (define row-position (car (car newStateIndex)))
     (define column-position (cadr (car newStateIndex)))    
-    (define newValue (cadr newStateIndex))
-    
+    (define newValue (cadr newStateIndex))    
 
     (define row (length all-possiblemoves))
     (define column (length (car all-possiblemoves)))
@@ -393,8 +386,7 @@
                       )
                 ) column-list)
          )
-            )
-            
+            )            
         )       
 
     (define (box-starting-index position-value)
@@ -443,8 +435,7 @@
          )
         (else column-list)
         )           
-        )
-    
+        )    
 
     (define row-count -1) 
      
@@ -454,7 +445,6 @@
                )
                  
             all-possiblemoves))
-
     ;update box values
     (set! row-count -1)
     (set! all-possiblemoves (map (lambda(x)           
@@ -462,8 +452,7 @@
                 (box-updated-column-value x row-count)               
                )
                  
-            all-possiblemoves))
-    
+            all-possiblemoves))    
     )
 
   (define (get-non-empty-position i j)    
@@ -505,8 +494,7 @@
                  )
              )            
             (else '#f)
-            )
-      
+            )      
       )
     (find-i-and-jth-value)
     )
@@ -566,7 +554,7 @@
     (find-i-and-jth-value)
     )
   
-  
+  ;constraint propagation
   (define (ConstraintPropagation)
     (define row -1)
     (define column -1)
@@ -574,6 +562,7 @@
     (define (update-all-possible-moves-with-solutionvalues)     
       
       (define nonempty-position (get-non-empty-position row column))
+      (display "return from get non empty position")
 
       (cond
         (nonempty-position
@@ -588,8 +577,7 @@
 
     (define (update-sudoku-solution-with-single-possible-move)
       (define unit-length-element (get-unit-length-list-position row column))
-      (display "\nreturn of unit length element: ")
-      (display unit-length-element) (newline)
+
       (cond
         (unit-length-element
 
@@ -599,13 +587,9 @@
          (update-sudoku-solution-with-single-possible-move)
          )
         )  
-      )
-
+      )  
     
-    
-    (update-all-possible-moves-with-solutionvalues)
-
-  
+    (update-all-possible-moves-with-solutionvalues)  
 
     (set! row 0)
     (set! column 0)
@@ -613,6 +597,76 @@
     (update-sudoku-solution-with-single-possible-move)
     )
 
+  ;change all-possiblemoves structure
+  (define (change-all-possiblemoves-structure)
+    (display "\nInside change all possible moves structure")(newline)
+
+    (define row (length all-possiblemoves))
+    (define column (length (car all-possiblemoves)))
+    (define box-position null)
+  
+    (define (get-box-position starting-row starting-column)
+      (cond
+        ((= starting-row 0)
+         (cond
+           ((= starting-column 0) 0)
+           ((= starting-column 3) 1)
+           (else 2)
+           )
+         )
+        ((= starting-row 3)
+         (cond
+           ((= starting-column 0) 3)
+           ((= starting-column 3) 4)
+           (else 5)
+           )
+         )
+        (else
+         (cond
+           ((= starting-column 0) 6)
+           ((= starting-column 3) 7)
+           (else 8)
+           )
+         )
+       )
+      )
+    
+    (define (get-updated-column-value column-list row-count)      
+      (define count 0)
+      (set! box-starting-row-position (box-starting-index row-count))
+      (set! box-starting-column-position (box-starting-index column-list))
+      (set! box-position (get-box-position box-starting-row-position box-starting-column-position))     
+     
+         (map (lambda(y) (list y box-position)                
+                ) column-list)                     
+        )       
+
+    (define (box-starting-index position-value)
+       (cond
+         ((or (= position-value 0) (= position-value 1) (= position-value 2))
+          0
+          )
+         ((or (= position-value 3) (= position-value 4) (= position-value 5))
+          3
+          )
+         ((or (= position-value 6) (= position-value 7) (= position-value 8))
+          6
+          )         
+         )
+       )
+
+     (define box-starting-row-position 0)
+     (define box-starting-column-position 0)       
+
+    (define row-count -1) 
+     
+    (set! all-possiblemoves (map (lambda(x)           
+                  (set! row-count (+ row-count 1))
+                (get-updated-column-value x row-count)               
+               )
+                 
+            all-possiblemoves))
+    )
   
   
   (define (SolveSudokuProblem)    
@@ -630,8 +684,7 @@
         (enumerate-interval 1 (length (car sudoku-solution))))
        )
      (enumerate-interval 1 (length sudoku-solution)))
-    )
-  
+    )  
   
    (define maxMoves 9)
    (define InitialIndex 0)
@@ -642,59 +695,36 @@
 
   (ConstraintPropagation)
 
-  (cond
-    ((not (find-next-empty-position 0 0))
-     (display "Solution found only by constraint propagation")(newline)
-     (display "\nSolution: ")(newline)
-     (display sudoku-solution)
-     
-    )
-    (else
-     (display "Solution found through constraint propagation and Iterative-DFS")(newline)
-     (display "Remaining solution after constraint propagation: ") (newline)
-     (display sudoku-solution) (newline)     
-     (display "\nSolution: ")(newline)
-     (display (SolveSudokuProblem))
-     )
-    )
- 
+  (display "\nAfter constraint propagation") (newline)
+  (display "value of all possible moves: ")
+  (display all-possiblemoves) (newline) (newline)
+  (display "value of sudoku solution: ")
+  (display sudoku-solution) (newline)
+
+  (change-all-possiblemoves-structure)
+
+  (display "value of all possible moves after structure change: ")(newline)
+  (display all-possiblemoves) (newline) (newline)
+
   
+
+  ;(cond
+    ;((not (find-next-empty-position 0 0))
+    ; (display "Solution found only by constraint propagation")(newline)
+    ; (display "\nSolution: ")(newline)
+    ; (display sudoku-solution)
+     
+   ; )
+   ; (else
+    ; (display "Solution found through constraint propagation and Iterative-DFS")(newline)
+     ;(display "Remaining solution after constraint propagation: ") (newline)
+    ; (display sudoku-solution) (newline)
+     
+    ; (display "\nSolution: ")(newline)
+     ;(display (SolveSudokuProblem))
+    ; )
+    ;) 
  )
-
-
-(define sudoku-problem-world-hardest
-  ;world hardest problem
-  (list (list  8   'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil)
-        (list 'nil 'nil  3    6   'nil 'nil 'nil 'nil 'nil)
-        (list 'nil  7   'nil 'nil  9   'nil  2   'nil 'nil)
-        (list 'nil  5   'nil 'nil 'nil  7   'nil 'nil 'nil)
-        (list 'nil 'nil 'nil 'nil  4    5    7   'nil 'nil)
-        (list 'nil 'nil 'nil  1   'nil 'nil 'nil  3   'nil)
-        (list 'nil 'nil  1   'nil 'nil 'nil 'nil  6    8)
-        (list 'nil 'nil  8    5   'nil 'nil 'nil  1   'nil)
-        (list 'nil  9   'nil 'nil 'nil 'nil  4   'nil 'nil)))
-
-(define sudoku-problem-easiest
-  (list (list 'nil 'nil 6 'nil 7 8 4 9 'nil)
-        (list 5 'nil 9 1 3 'nil 7 6 8)
-        (list 4 'nil 7 6 'nil 9 5 3 'nil)
-        (list 2 'nil 3 4 1 5 9 8 7)
-        (list 9 'nil 4 8 6 'nil 1 2 5)
-        (list 8 'nil 1 7 'nil 2 6 4 'nil)
-        (list 1 'nil 8 9 4 7 2 5 6)
-        (list 6 'nil 'nil 3 5 1 8 7 4)
-        (list 'nil 'nil 5 2 8 6 3 'nil 9)))
-
-(define sudoku-problem-easy
-  (list (list  9   'nil 'nil 1    3    'nil 'nil 8    'nil)
-        (list 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil 7)
-        (list 8    'nil 'nil 7    6    4    9    1    2)
-        (list 6    'nil 'nil 'nil 'nil 9    1    'nil 8)
-        (list 5    'nil 3    8    7    'nil 6    'nil 9)
-        (list 'nil 'nil 'nil 'nil 5    'nil 'nil 7    4)
-        (list 'nil 1    9    4    'nil 'nil 'nil 'nil 5)
-        (list 'nil 'nil 'nil 9    'nil 'nil 2    4    3)
-        (list 'nil 'nil 2    6    8    3    7    'nil 'nil)))
 
 (define sudoku-problem-medium
   (list (list 6    5    'nil 'nil 'nil 'nil 4    7    9)
@@ -707,57 +737,8 @@
         (list 'nil 'nil 4    'nil 1    'nil 6    'nil 'nil)
         (list 1    7    9    3    'nil 'nil 'nil 'nil 'nil)))
 
-(define sudoku-problem-hard
-  (list (list 'nil 4    'nil 9    'nil 'nil 'nil 2    'nil)
-        (list 'nil 1    'nil 'nil 'nil 7    9    'nil 'nil)
-        (list 'nil 'nil 'nil 3    2    'nil 'nil 'nil 'nil)
-        (list 8    'nil 'nil 'nil 6    3    'nil 7    'nil)
-        (list 3    'nil 'nil 'nil 'nil 'nil 2    'nil 'nil)
-        (list 6    'nil 'nil 'nil 'nil 4    5    'nil 'nil)
-        (list 4    'nil 'nil 'nil 'nil 9    'nil 'nil 8)
-        (list 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil 'nil)
-        (list 'nil 5    'nil 'nil 'nil 6    7    'nil 'nil)))
-
-(define sudoku-problem-expert
-  (list (list 9    'nil 'nil 'nil 2    'nil 'nil 'nil 'nil)
-        (list 'nil 8    'nil 'nil 1    'nil 'nil 'nil 4)
-        (list 'nil 'nil 'nil 'nil 3    'nil 'nil 'nil 'nil)
-        (list 'nil 'nil 4    7    'nil 'nil 1    3    'nil)
-        (list 'nil 2    'nil 'nil 'nil 'nil 'nil 'nil 6)
-        (list 'nil 'nil 'nil 4    'nil 9    'nil 'nil 8)
-        (list 7    3    'nil 'nil 'nil 'nil 2    6    'nil)
-        (list 'nil 'nil 'nil 'nil 'nil 3    'nil 'nil 'nil)
-        (list 6    'nil 1    'nil 'nil 'nil 4    'nil 'nil)))
-
-(define sudoku-problem-evil
-  (list (list 'nil 7    'nil 'nil 'nil 'nil 'nil 8    'nil)
-        (list 3    'nil 'nil 'nil 5    9    6    'nil 'nil)
-        (list 'nil 'nil 'nil 4    'nil 'nil 'nil 'nil 'nil)
-        (list 'nil 'nil 'nil 2    'nil 'nil 1    'nil 'nil)
-        (list 4    'nil 'nil 6    'nil 'nil 'nil 'nil 'nil)
-        (list 'nil 3    'nil 'nil 4    1    'nil 'nil 7)
-        (list 'nil 'nil 'nil 'nil 'nil 2    'nil 'nil 'nil)
-        (list 5    'nil 'nil 'nil 1    3    9    'nil 'nil)
-        (list 'nil 'nil 9    'nil 'nil 'nil 'nil 'nil 6)))
 
 
-(display "\nEasiest sudoku problem solution: ")(newline)
-(sudoku-solver sudoku-problem-easiest)(newline)
 
-;(display "\nEasy sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-easy)(newline)
-
-;(display "\nMedium sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-medium)(newline)
-
-;(display "\nHard sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-hard)(newline)
-
-;(display "\nExpert sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-expert)(newline)
-
-;(display "\nEvil sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-evil)(newline)
-
-;(display "\nWorlds Hardest sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-world-hardest)(newline)
+(display "\nMedium sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-medium)(newline)

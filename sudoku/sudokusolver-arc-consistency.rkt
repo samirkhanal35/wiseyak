@@ -66,8 +66,7 @@
     
     (define row-position (car (car newStateIndex)))
     (define column-position (cadr (car newStateIndex)))    
-    (define newValue (cadr newStateIndex))
-    
+    (define newValue (cadr newStateIndex))    
 
     (define row (length sudoku-solution))
     (define column (length (car sudoku-solution)))    
@@ -230,8 +229,7 @@
           )
          '#f
          '#t
-         )
-     
+         )     
      )
 
   (define (get-next-move newposition prevIndex)
@@ -310,8 +308,7 @@
 
               (cond
                 (newStartingIndex
-                   (set! newStateIndex (list newposition newStartingIndex))
-              
+                   (set! newStateIndex (list newposition newStartingIndex))              
               
         (cond  ((CheckLegality newStateIndex)                
                 (set! newStateIndexFlag '#t))
@@ -320,10 +317,7 @@
                 (nextMoveState))
                )                 
                  )
-
-                )
-              
-            
+                )           
               )
          )
        (cond (newStateIndexFlag
@@ -339,8 +333,7 @@
   (define (update-all-possible-moves newStateIndex)    
     (define row-position (car (car newStateIndex)))
     (define column-position (cadr (car newStateIndex)))    
-    (define newValue (cadr newStateIndex))
-    
+    (define newValue (cadr newStateIndex))    
 
     (define row (length all-possiblemoves))
     (define column (length (car all-possiblemoves)))
@@ -393,8 +386,7 @@
                       )
                 ) column-list)
          )
-            )
-            
+            )            
         )       
 
     (define (box-starting-index position-value)
@@ -443,8 +435,7 @@
          )
         (else column-list)
         )           
-        )
-    
+        )    
 
     (define row-count -1) 
      
@@ -454,7 +445,6 @@
                )
                  
             all-possiblemoves))
-
     ;update box values
     (set! row-count -1)
     (set! all-possiblemoves (map (lambda(x)           
@@ -462,8 +452,7 @@
                 (box-updated-column-value x row-count)               
                )
                  
-            all-possiblemoves))
-    
+            all-possiblemoves))    
     )
 
   (define (get-non-empty-position i j)    
@@ -505,8 +494,7 @@
                  )
              )            
             (else '#f)
-            )
-      
+            )      
       )
     (find-i-and-jth-value)
     )
@@ -588,8 +576,7 @@
 
     (define (update-sudoku-solution-with-single-possible-move)
       (define unit-length-element (get-unit-length-list-position row column))
-      (display "\nreturn of unit length element: ")
-      (display unit-length-element) (newline)
+
       (cond
         (unit-length-element
 
@@ -599,13 +586,9 @@
          (update-sudoku-solution-with-single-possible-move)
          )
         )  
-      )
-
+      )  
     
-    
-    (update-all-possible-moves-with-solutionvalues)
-
-  
+    (update-all-possible-moves-with-solutionvalues)  
 
     (set! row 0)
     (set! column 0)
@@ -613,7 +596,376 @@
     (update-sudoku-solution-with-single-possible-move)
     )
 
-  
+  ;domain constraint propagation
+  (define (domain-constriant-propagation)
+    (display "\nInside domain constraint propagation")(newline)
+    
+    (display "all possible moves after constraint propagation: ") (newline)
+    (display all-possiblemoves) (newline)
+
+    (define (min-length-element)
+      ;(display "\nInside minimun length element") (newline)
+      (define row-position 0)
+      (define column-position 0)
+      (define max-length 9)
+      (define element-position null)
+      (define list-elements null)
+
+      (define (get-min-length-element list2)
+        (set! list-elements list2)
+        (define pos-count 0)
+        (map
+         (lambda(x)
+           (cond
+             ((list? x)
+              (cond
+                ((and (> max-length (length x)) (< (length x) 3))
+                 (set! max-length (length x))
+                 (set! column-position pos-count)
+                 (set! pos-count (+ pos-count 1))                 
+                 )
+                (else
+                 (set! pos-count (+ pos-count 1))
+                 )
+                )
+              )
+             (else
+              (set! pos-count (+ pos-count 1))
+              )             
+             )
+           )
+         list2)
+        
+        )
+
+      
+
+      (define (element-in-row)
+        (get-min-length-element (list-ref all-possiblemoves row-position))       
+        (cond
+          ((null? column-position)
+           (cond
+             ((= row-position 8)
+              '#f
+              )
+             (else
+              (set! row-position (+ row-position 1))
+              (element-in-row)              
+              )
+             )           
+           )
+          (else
+           (list-ref list-elements column-position)
+           )
+        )            
+        )
+      
+      (list (element-in-row) (list row-position column-position))
+      )
+
+    (define (same-in-row passed-element)
+      (display "\nInside same in row") (newline)
+      (display "passed element: ")
+      (display passed-element) (newline)
+      (define row (caadr passed-element))
+      (display "row value: ")
+      (display row) (newline)
+
+      (define column (cadadr passed-element))
+      (display "column value: ")
+      (display column) (newline)
+      
+      (define row-elements (list-ref all-possiblemoves row))
+      (display "row elements: ")
+      (display row-elements) (newline)
+
+      (display "element: ")
+      (display (car passed-element)) (newline)
+
+      (define (check-rowlist-element list1 element)
+        (define rowlist-count 0)
+        (define (check list1)
+          (cond
+            ((null? list1) '#f)
+            ((= rowlist-count column)
+             (set! rowlist-count (+ rowlist-count 1))
+             (check (cdr list1))
+             )
+            ((eq? (car list1) element) '#t)
+            (else
+             (set! rowlist-count (+ rowlist-count 1))
+             (check (cdr list1)))
+           ))
+    (check list1)
+    )
+
+      (display "return from check-rowlist-element: ")
+      (display (check-rowlist-element row-elements (car passed-element)))
+      (newline)
+      (check-rowlist-element row-elements (car passed-element))     
+    )
+
+    (define (same-in-column passed-element)
+      (display "\nInside same in column") (newline)
+      (display "passed element: ")
+      (display passed-element) (newline)
+
+      (define row (caadr passed-element))
+      (display "row value: ")
+      (display row) (newline)
+
+      (define column (cadadr passed-element))
+      (display "column value: ")
+      (display column) (newline)
+
+      (define column-elements null)
+        (map
+         (lambda(x)
+           (define column-count 0)
+           (map
+            (lambda(y)
+              (cond
+                ((= column-count column)
+                 (set! column-elements (append-list column-elements y))
+                 (set! column-count (+ column-count 1))
+                 )
+                (else
+                 (set! column-count (+ column-count 1))
+                 )
+                )
+              )
+            x)
+           )
+         all-possiblemoves)
+
+      (display "\nColumn elements: ")
+      (display column-elements) (newline)
+
+      (define (check-columnlist-element list1 element)
+        (define columnlist-count 0)
+        (define (check list1)
+          (cond
+            ((null? list1) '#f)
+            ((= columnlist-count row)
+             (set! columnlist-count (+ columnlist-count 1))
+             (check (cdr list1))
+             )
+            ((eq? (car list1) element) '#t)
+            (else
+             (set! columnlist-count (+ columnlist-count 1))
+             (check (cdr list1)))
+           ))
+    (check list1)
+    )
+
+      (display "return from check-columnlist-element: ")
+      (display (check-columnlist-element column-elements (car passed-element)))
+      (newline)     
+        
+      (check-columnlist-element column-elements (car passed-element))
+  )
+
+    (define (same-in-box passed-element)
+      (display "\nInside same in box") (newline)
+      (display "passed element: ")
+      (display passed-element) (newline)
+
+      (define row (caadr passed-element))
+      (display "row value: ")
+      (display row) (newline)
+
+      (define column (cadadr passed-element))
+      (display "column value: ")
+      (display column) (newline)
+
+      (define (box-starting-index position-value)
+       (cond
+         ((or (= position-value 0) (= position-value 1) (= position-value 2))
+          0
+          )
+         ((or (= position-value 3) (= position-value 4) (= position-value 5))
+          3
+          )
+         ((or (= position-value 6) (= position-value 7) (= position-value 8))
+          6
+          )         
+         )
+       )
+
+     (define box-starting-row-position (box-starting-index row))
+     (define box-starting-column-position (box-starting-index column))
+
+      (define box-elements null)
+      (define box-elements-positions null)
+      (define given-element-position null)
+
+      (define (box-updated-column-value column-list row-count)      
+      (define column-count 0)
+      (define position-count 0)
+      (cond
+        ((or (= box-starting-row-position row-count)
+             (= (+ box-starting-row-position 1) row-count)
+             (= (+ box-starting-row-position 2) row-count)
+             )
+         (map
+          (lambda(y)
+            (cond
+           ((or (= box-starting-column-position column-count)
+                (= (+ box-starting-column-position 1) column-count)
+                (= (+ box-starting-column-position 2) column-count)
+                )
+            
+           
+            (cond
+              ((eq? (car passed-element) y) (set! given-element-position position-count))
+              )            
+            (set! column-count (+ column-count 1))
+            (set! position-count (+ position-count 1))
+            (set! box-elements (append-list box-elements y))
+            (set! box-elements-positions (append-list box-elements-positions (list row-count column-count)))
+            )
+           (else
+            (set! column-count (+ column-count 1))
+            
+            )
+           )
+            )
+           column-list)
+         
+         )
+        (else column-list)
+        )           
+        )
+
+      (define row-count -1)
+      (map (lambda(x)           
+                  (set! row-count (+ row-count 1))
+                (box-updated-column-value x row-count)               
+               )
+                 
+            all-possiblemoves)
+
+      (display "\nBox elements: ")
+      (display box-elements) (newline)
+
+      (display "Box elements positions: ")
+      (display box-elements-positions) (newline)
+
+      (display "given-element-position: ")
+      (display given-element-position) (newline)
+      
+      (define (check-boxlist-element list1 element)
+        (define columnlist-count 0)
+        (define (check list1)
+          (cond
+            ((null? list1) '#f)
+            ((= columnlist-count given-element-position)
+             (set! columnlist-count (+ columnlist-count 1))
+             (check (cdr list1))
+             )
+            ((eq? (car list1) element) '#t)
+            (else
+             (set! columnlist-count (+ columnlist-count 1))
+             (check (cdr list1)))
+           ))
+        (check list1)
+        )
+
+      (display "return from check-boxlist-element: ")
+      (display (check-boxlist-element box-elements (car passed-element)))
+      (newline)
+
+      (check-boxlist-element box-elements (car passed-element))
+      
+      )
+
+    (define (subset-in-row passed-element)
+      (display "\nInside subset in row") (newline)
+      (display "\nInside same in box") (newline)
+      (display "passed element: ")
+      (display passed-element) (newline)
+
+      (define row (caadr passed-element))
+      (display "row value: ")
+      (display row) (newline)
+
+      (define column (cadadr passed-element))
+      (display "column value: ")
+      (display column) (newline)
+      
+      )
+
+    (define (subset-in-column passed-element)
+      (display "\nInside subset in column") (newline)
+      '#t
+      )
+
+    (define (subset-in-box passed-element)
+      (display "\nInside subset in box") (newline)
+      '#t
+      )
+
+   
+
+    ;operation if the element is same with another element
+    (define (element-operation element same-element)
+      (display "\nInside element operation")(newline)
+      (display "passed element values: ")
+      (display element) (newline)
+      )
+
+
+    (define (propagation-operation)
+      (set! curr-element (min-length-element))
+      (define same-element null)
+      
+      (cond
+        (curr-element
+         (cond
+           ((same-in-row curr-element)
+            (set! same-element (same-in-row curr-element))
+            (element-operation curr-element same-element)
+            ;do some thing
+            )
+           ((same-in-column curr-element)
+            (set! same-element (same-in-column curr-element))
+            (element-operation curr-element same-element)
+            ;do some thing
+            )
+           ((same-in-box curr-element)
+            (set! same-element (same-in-box curr-element))
+            (element-operation curr-element same-element)
+            ;do some thing
+            )
+           (else
+            (cond
+              ((subset-in-row curr-element)
+              (set! same-element (subset-in-row curr-element))
+              (element-operation curr-element same-element)
+              ;do some thing
+              )
+              ((subset-in-column curr-element)
+               (set! same-element (subset-in-column curr-element))
+               (element-operation curr-element same-element)
+               ;do some thing
+               )
+              ((subset-in-box curr-element)
+               (set! same-element (subset-in-box curr-element))
+               (element-operation curr-element same-element)
+               ;do some thing
+               )
+             )            
+            )
+           )        
+         ;(propagation-operation)
+         )
+        )      
+      )
+
+    (define curr-element null)
+    (propagation-operation)
+    
+    )
   
   (define (SolveSudokuProblem)    
      (DepthFirstSearch Path nextMove checkFinalState MaxDepth update-list-position InitialIndex)     
@@ -630,8 +982,7 @@
         (enumerate-interval 1 (length (car sudoku-solution))))
        )
      (enumerate-interval 1 (length sudoku-solution)))
-    )
-  
+    )  
   
    (define maxMoves 9)
    (define InitialIndex 0)
@@ -642,24 +993,26 @@
 
   (ConstraintPropagation)
 
-  (cond
-    ((not (find-next-empty-position 0 0))
-     (display "Solution found only by constraint propagation")(newline)
-     (display "\nSolution: ")(newline)
-     (display sudoku-solution)
+  (domain-constriant-propagation)
+
+  ;(cond
+    ;((not (find-next-empty-position 0 0))
+    ; (display "Solution found only by constraint propagation")(newline)
+    ; (display "\nSolution: ")(newline)
+    ; (display sudoku-solution)
      
-    )
-    (else
-     (display "Solution found through constraint propagation and Iterative-DFS")(newline)
-     (display "Remaining solution after constraint propagation: ") (newline)
-     (display sudoku-solution) (newline)     
-     (display "\nSolution: ")(newline)
-     (display (SolveSudokuProblem))
-     )
-    )
- 
-  
+   ; )
+   ; (else
+    ; (display "Solution found through constraint propagation and Iterative-DFS")(newline)
+     ;(display "Remaining solution after constraint propagation: ") (newline)
+    ; (display sudoku-solution) (newline)
+     
+    ; (display "\nSolution: ")(newline)
+     ;(display (SolveSudokuProblem))
+    ; )
+    ;) 
  )
+
 
 
 (define sudoku-problem-world-hardest
@@ -741,14 +1094,14 @@
         (list 'nil 'nil 9    'nil 'nil 'nil 'nil 'nil 6)))
 
 
-(display "\nEasiest sudoku problem solution: ")(newline)
-(sudoku-solver sudoku-problem-easiest)(newline)
+;(display "\nEasiest sudoku problem solution: ")(newline)
+;(sudoku-solver sudoku-problem-easiest)(newline)
 
 ;(display "\nEasy sudoku problem solution: ")(newline)
 ;(sudoku-solver sudoku-problem-easy)(newline)
 
-;(display "\nMedium sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-medium)(newline)
+(display "\nMedium sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-medium)(newline)
 
 ;(display "\nHard sudoku problem solution: ")(newline)
 ;(sudoku-solver sudoku-problem-hard)(newline)

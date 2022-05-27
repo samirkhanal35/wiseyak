@@ -252,7 +252,7 @@
              (lambda(y)
                (cond
                  ((eq? column-count column-position)
-                  (set! position-possiblemoves (list-ref (list-ref all-possiblemoves row-position) column-position))
+                  (set! position-possiblemoves (car (list-ref (list-ref all-possiblestates row-position) column-position)))
                   (set! column-count (+ column-count 1))
                   )
                  (else
@@ -268,7 +268,7 @@
             )
            )
          )
-       all-possiblemoves)
+       all-possiblestates)
     
     (define next-index '#f)
 
@@ -342,24 +342,24 @@
     (define newValue (cadr newStateIndex))
     
 
-    (define row (length all-possiblemoves))
-    (define column (length (car all-possiblemoves)))
+    (define row (length all-possiblestates))
+    (define column (length (car all-possiblestates)))
 
     (define (update-column column)
       (define temporary-column-values null)
       (cond
-        ((list? column)
+        ((list? (car column))
          (map (lambda(y)
              (cond ((not (= y newValue))
                     (set! temporary-column-values (append-list temporary-column-values y))))
-                         ) column)
+                         ) (car column))
          )
         (else
-         (set! temporary-column-values column)
+         (set! temporary-column-values (car column))
          )
         )
      
-      temporary-column-values
+      (list temporary-column-values (cadr column))
       )
     
     (define (get-updated-column-value column-list row-count)      
@@ -372,7 +372,7 @@
          (cond ((eq? count column-position)
                
                (set! count (+ count 1))
-               newValue
+               (list newValue (cadr x))
                )
                  (else
                   (set! count (+ count 1))
@@ -395,27 +395,31 @@
          )
             )
             
-        )       
+        )           
 
-    (define (box-starting-index position-value)
-       (cond
-         ((or (= position-value 0) (= position-value 1) (= position-value 2))
-          0
-          )
-         ((or (= position-value 3) (= position-value 4) (= position-value 5))
-          3
-          )
-         ((or (= position-value 6) (= position-value 7) (= position-value 8))
-          6
-          )         
-         )
-       )
+    (define (get-starting-row-position x)
+      (cond
+        ((or (= x 0) (= x 1) (= x 2)) 0)
+        ((or (= x 3) (= x 4) (= x 5))  box-size)
+        (else (* box-size 2))        
+        )
+      )
 
-     (define box-starting-row-position (box-starting-index row-position))
-     (define box-starting-column-position (box-starting-index column-position))
+    (define (get-starting-column-position x)
+      (cond
+        ((or (= x 0) (= x 3) (= x 6)) 0)
+        ((or (= x 1) (= x 4) (= x 7))  box-size)
+        (else (* box-size 2))        
+        )
+      )
+    
+     (define box-starting-row-position (get-starting-row-position (cadr (list-ref (list-ref all-possiblestates row-position) column-position))))
+     (define box-starting-column-position (get-starting-column-position (cadr (list-ref (list-ref all-possiblestates row-position) column-position))))
 
     (define (box-updated-column-value column-list row-count)      
       (define column-count 0)
+      
+      
       (cond
         ((or (= box-starting-row-position row-count)
              (= (+ box-starting-row-position 1) row-count)
@@ -448,21 +452,21 @@
 
     (define row-count -1) 
      
-    (set! all-possiblemoves (map (lambda(x)           
+    (set! all-possiblestates (map (lambda(x)           
                   (set! row-count (+ row-count 1))
                 (get-updated-column-value x row-count)               
                )
                  
-            all-possiblemoves))
+            all-possiblestates))
 
     ;update box values
     (set! row-count -1)
-    (set! all-possiblemoves (map (lambda(x)           
+    (set! all-possiblestates (map (lambda(x)           
                   (set! row-count (+ row-count 1))
                 (box-updated-column-value x row-count)               
                )
                  
-            all-possiblemoves))
+            all-possiblestates))
     
     )
 
@@ -533,9 +537,9 @@
       (cond
         ((and (= i 8) (= j 8))
          (cond
-           ((list? (list-ref (list-ref all-possiblemoves i) j))
-            (if (= (length (list-ref (list-ref all-possiblemoves i) j)) 1)
-                (list (list i j) (car (list-ref (list-ref all-possiblemoves i) j)))
+           ((list? (car (list-ref (list-ref all-possiblestates i) j)))
+            (if (= (length (car (list-ref (list-ref all-possiblestates i) j))) 1)
+                (list (list i j) (caar (list-ref (list-ref all-possiblestates i) j)))
                 '#f
                 )
             )
@@ -546,9 +550,9 @@
             ((and (< i 9) (< j 9))
              
              (cond
-           ((list? (list-ref (list-ref all-possiblemoves i) j))
-            (cond ((= (length (list-ref (list-ref all-possiblemoves i) j)) 1)
-                (list (list i j) (car (list-ref (list-ref all-possiblemoves i) j))))
+           ((list? (car (list-ref (list-ref all-possiblestates i) j)))
+            (cond ((= (length (car (list-ref (list-ref all-possiblestates i) j))) 1)
+                (list (list i j) (caar (list-ref (list-ref all-possiblestates i) j))))
                   (else
                    (next-i-j-values)
                    (find-i-and-jth-value)
@@ -566,7 +570,7 @@
     (find-i-and-jth-value)
     )
   
-  
+  ;Constraint Propagation
   (define (ConstraintPropagation)
     (define row -1)
     (define column -1)
@@ -587,13 +591,15 @@
       )
 
     (define (update-sudoku-solution-with-single-possible-move)
+      ;(display "\nInside update solution with single possible move") (newline)
+      
       (define unit-length-element (get-unit-length-list-position row column))
-      (display "\nreturn of unit length element: ")
-      (display unit-length-element) (newline)
+
       (cond
         (unit-length-element
 
          (update-list-position unit-length-element)
+         
          (update-all-possible-moves unit-length-element)
 
          (update-sudoku-solution-with-single-possible-move)
@@ -605,7 +611,6 @@
     
     (update-all-possible-moves-with-solutionvalues)
 
-  
 
     (set! row 0)
     (set! column 0)
@@ -613,52 +618,353 @@
     (update-sudoku-solution-with-single-possible-move)
     )
 
+  ;get next list element in all-possiblestates
+  (define (get-next-list-element i j)    
+    
+    (define (next-i-j-values)
+      (cond ((and (< i 0) (< j 0))
+             (set! i 0)
+             (set! j 0)
+             )
+        ((and (< i 9) (< j 8))
+             (set! j (+ j 1)))
+            ((and (< i 8) (= j 8))
+             (set! i (+ i 1))
+             (set! j 0))
+            ((and (= i 8) (= j 8))
+             (set! i (+ i 1))
+             (set! j (+ j 1))
+             )
+            )
+      )
+
+    (next-i-j-values)
+    
+    (define (find-i-and-jth-value)
+      
+      (display "value of i: ")
+      (display i) (newline)
+      (display "value of j: ")
+      (display j) (newline)
+      (cond
+        ((and (= i 8) (= j 8))
+         
+         
+         (cond
+           ((list? (car (list-ref (list-ref all-possiblestates i) j)))
+            
+                (list (list i j) (car (list-ref (list-ref all-possiblestates i) j)))
+               
+            )
+           
+           (else '#f)
+           )                      
+           )         
+            ((and (< i 9) (< j 9))
+             
+             (cond
+           ((list? (car (list-ref (list-ref all-possiblestates i) j)))
+           
+                (list (list i j) (car (list-ref (list-ref all-possiblestates i) j))))
+                  
+                       
+           (else
+            (next-i-j-values)
+            (find-i-and-jth-value))
+           )
+             )            
+            (else '#f)
+            )      
+      )
+    
+    (find-i-and-jth-value)
+    )
+
+  ;check same element in row
+  (define (same-in-row next-list-element)
+    (display "\nInside same in row ") (newline)
+
+    (define row (caar next-list-element))
+    (display "row value: ")
+    (display row) (newline)
   
+      (define column (cadar next-list-element))
+    (display "column value: ")
+    (display column) (newline)
+ 
+      (define row-elements (list-ref all-possiblestates row))
+    (display "row elements: ")
+    (display row-elements) (newline)
+   
+      (define (check-rowlist-element list1 element)
+        (display "\nInside check row list element: ")(newline)       
+        
+        (define rowlist-count 0)
+        (define (check list1)
+          (cond
+            ((null? list1) '#f)
+            ((= rowlist-count column)             
+             (set! rowlist-count (+ rowlist-count 1))
+             (check (cdr list1))
+             )
+            ((equal? (caar list1) element)            
+             (list (list row rowlist-count) (car list1)))
+            (else             
+             (set! rowlist-count (+ rowlist-count 1))
+             (check (cdr list1)))
+           ))
+        (check list1)
+        )
+
+     
+      (check-rowlist-element row-elements (cadr next-list-element))   
+    )
+
+
+  ;check same element in column
+  (define (same-in-column next-list-element)
+    (display "\nInside same in column ") (newline)
+
+    (define row (caar next-list-element))
+    (display "row value: ")
+    (display row) (newline)
   
+      (define column (cadar next-list-element))
+    (display "column value: ")
+    (display column) (newline)
+ 
+      
+
+    (define column-elements null)
+        (map
+         (lambda(x)
+           (define column-count 0)
+           (map
+            (lambda(y)
+              (cond
+                ((= column-count column)
+                 (set! column-elements (append-list column-elements y))
+                 (set! column-count (+ column-count 1))
+                 )
+                (else
+                 (set! column-count (+ column-count 1))
+                 )
+                )
+              )
+            x)
+           )
+         all-possiblestates)   
+
+      (define (check-columnlist-element list1 element)
+        (display "column elements: ")
+        (display list1) (newline)
+        (display "element: ")
+        (display element) (newline)
+        (define columnlist-count 0)
+        (define (check list1)
+          (cond
+            ((null? list1) '#f)
+            ((= columnlist-count row)
+             (set! columnlist-count (+ columnlist-count 1))
+             (check (cdr list1))
+             )
+            ((equal? (car list1) element)
+             (list (list row columnlist-count) (car list1))
+             )
+            (else
+             (set! columnlist-count (+ columnlist-count 1))
+             (check (cdr list1)))
+           ))
+        (check list1)
+        )
+
+    (display "check column list element return: ")
+    (display (check-columnlist-element column-elements (cadr next-list-element)))(newline)
+      
+    (check-columnlist-element column-elements (cadr next-list-element))
+
+    
+    )
+
+  ;propagation operation of domain constraint propagation
+  (define (propagation-operation next-list-element)
+    (display "\nInside propagation operation of next list element")(newline)
+    (display "passed next-list-element: ")
+    (display next-list-element) (newline)
+    
+    (define row (caar next-list-element))
+    (define column (cadar next-list-element))
+    (define element (cadr next-list-element))
+    (define same-element null)
+    (define element-values null)
+
+    (display "row value: ")
+    (display row) (newline)
+    (display "column value: ")
+    (display column) (newline)
+    (display "element: ")
+    (display element) (newline) (newline)
+
+    (define (row-operation element-values)
+      (display "\nInside row-operation")(newline)
+      (display "passed element vlaues: ")
+      (display element-values) (newline)
+
+      )
+
+    (define (column-operation element-values)
+      (display "\nInside row-operation")(newline)
+      (display "passed element vlaues: ")
+      (display element-values) (newline)
+
+      )
+
+    (define (operation element-values)
+      (display "\nInside operation")(newline)
+      (display "passed element vlaues: ")
+      (display element-values) (newline)
+
+      )
+
+    (cond
+      ((same-in-row next-list-element)
+       (display "same in row condition passed") (newline)
+       (set! same-element (same-in-row next-list-element))
+       (display "return value from same in row : ")
+       (display same-element) (newline)
+       (set! element-values (list element (list (car next-list-element) (car same-element))))
+       (row-operation element-values)
+       )
+      ((same-in-column next-list-element)
+       (display "same in column condition passed") (newline)
+       (set! same-element (same-in-column next-list-element))
+       (display "return value from same in column : ")
+       (display same-element) (newline)
+       (set! element-values (list element (list (car next-list-element) (car same-element))))
+       (column-operation element-values)
+       )
+      (else
+       (display "inside else") (newline)
+       (set! element-values (list element (list (car next-list-element))))
+       ;(operation element-values)
+       )
+      )   
+    
+    )
+  
+  ;domain constraint propagation
+  (define (domain-constraint-propagation)
+    (display "\nInside domain constraint propagation")(newline)
+
+    (display "all-possiblestates: ")
+    (display all-possiblestates) (newline)
+
+    ;(define row -1)
+    ;(define column -1)
+
+    (define row 0)
+    (define column 8)
+
+    (define next-list-element null)
+
+    (define (propagation)
+      (set! next-list-element (get-next-list-element row column))
+
+      (cond
+        (next-list-element
+         
+         (set! row (caar next-list-element))
+         (set! column  (cadar next-list-element))         
+
+         (propagation-operation next-list-element)
+         ;(propagation)
+         )
+       )
+      
+      )
+    (propagation)      
+    )
+  
+  ;Solve sudoku problem
   (define (SolveSudokuProblem)    
      (DepthFirstSearch Path nextMove checkFinalState MaxDepth update-list-position InitialIndex)     
     )
   
    (define sudoku-solution sudoku-problem)   
-   (define Possiblemoves (list 1 2 3 4 5 6 7 8 9))
+   (define Possiblemoves (list 1 2 3 4 5 6 7 8 9))  
 
-  (define all-possiblemoves
+  (define maxMoves (length sudoku-problem))
+  (define box-size (/ maxMoves 3))
+  
+  (define (box-position row-position column-position)
+    (define row-value (quotient row-position box-size))
+    (define column-value (quotient column-position box-size))
+    (cond
+      ((= row-value 0)
+       (cond
+         ((= column-value 0) 0)
+         ((= column-value 1) 1)
+         (else 2)
+         )
+       )
+      ((= row-value 1)
+       (cond
+         ((= column-value 0) 3)
+         ((= column-value 1) 4)
+         (else 5)
+         )
+       )
+      (else
+       (cond
+         ((= column-value 0) 6)
+         ((= column-value 1) 7)
+         (else 8)
+         )
+       )
+      )
+    )
+
+  (define all-possiblestates
     (map
      (lambda(x)
        (map
-        (lambda(y) Possiblemoves)
-        (enumerate-interval 1 (length (car sudoku-solution))))
+        (lambda(y) (list Possiblemoves (box-position x y)))
+        (enumerate-interval 0 (- (length (car sudoku-solution)) 1)))
        )
-     (enumerate-interval 1 (length sudoku-solution)))
-    )
-  
-  
-   (define maxMoves 9)
+     (enumerate-interval 0 (- (length sudoku-solution) 1)))
+    ) 
+   
    (define InitialIndex 0)
   
   (define InitialState (list (list 0 0) InitialIndex))
    (define Path (list InitialState))
-   (define MaxDepth 1000)
+   (define MaxDepth (* maxMoves maxMoves))
 
-  (ConstraintPropagation)
+  (ConstraintPropagation)  
 
-  (cond
-    ((not (find-next-empty-position 0 0))
-     (display "Solution found only by constraint propagation")(newline)
-     (display "\nSolution: ")(newline)
-     (display sudoku-solution)
-     
-    )
-    (else
-     (display "Solution found through constraint propagation and Iterative-DFS")(newline)
-     (display "Remaining solution after constraint propagation: ") (newline)
-     (display sudoku-solution) (newline)     
-     (display "\nSolution: ")(newline)
-     (display (SolveSudokuProblem))
-     )
-    )
- 
-  
+  (display "\nall possible states after constraint propagation: ")
+  (display all-possiblestates) (newline)
+
+  (domain-constraint-propagation)  
+
+  ;(define final-solution null)
+  ;(cond
+  ;  ((not (find-next-empty-position 0 0))
+  ;   (set! final-solution (list-tail sudoku-solution 1))
+  ;   (display "Solution found only by constraint propagation")(newline)
+  ;   (display "\nFinal Solution: ")(newline)
+  ;   (display final-solution)
+  ;   
+  ;  )
+  ;  (else
+  ;   (set! final-solution (list-tail (car (SolveSudokuProblem)) 1))
+  ;   (display "Solution found through constraint propagation and Iterative-DFS")(newline)     
+  ;   (display "\nSolution Steps: ")(newline)
+  ;   (display final-solution)(newline)
+  ;   (display "\nFinal Solution: ") (newline)
+  ;   (display sudoku-solution) (newline)     
+  ;   )
+  ;  )
  )
 
 
@@ -741,14 +1047,14 @@
         (list 'nil 'nil 9    'nil 'nil 'nil 'nil 'nil 6)))
 
 
-(display "\nEasiest sudoku problem solution: ")(newline)
-(sudoku-solver sudoku-problem-easiest)(newline)
+;(display "\nEasiest sudoku problem solution: ")(newline)
+;(sudoku-solver sudoku-problem-easiest)(newline)
 
 ;(display "\nEasy sudoku problem solution: ")(newline)
 ;(sudoku-solver sudoku-problem-easy)(newline)
 
-;(display "\nMedium sudoku problem solution: ")(newline)
-;(sudoku-solver sudoku-problem-medium)(newline)
+(display "\nMedium sudoku problem solution: ")(newline)
+(sudoku-solver sudoku-problem-medium)(newline)
 
 ;(display "\nHard sudoku problem solution: ")(newline)
 ;(sudoku-solver sudoku-problem-hard)(newline)
