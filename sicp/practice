@@ -24,3 +24,11 @@ a)
 (exp 0)
 (exp 1)
 (/ (/ (exp 0) 2) 2)
+
+(define A '(+ a b))
+
+(define (solve x)
+  (define A 1)
+  (+ A x)
+  )
+(solve 3)
