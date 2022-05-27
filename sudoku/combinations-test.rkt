@@ -1,5 +1,5 @@
 #lang racket
-(define list1 (list 1 2 3 4))
+(define list1 (list 1 2 3 4 5 6 7 8 9))
 
 (define all-combinations null)
 
@@ -121,16 +121,7 @@
 
 (define (check-state temp-comb new-value combination-length sub-branch-combinations)
   (define unique-combinations (get-unique-elements temp-comb new-value))
-  (display "\nInside check state") (newline)
-
-  (display "passed sub branch combinations values: ")
-  (display sub-branch-combinations) (newline)
-
-  (display "created unique combinations: ")
-  (display unique-combinations) (newline)
-
-  (display "result of (check-list-element sub-branch-combinations unique-combinations): ")
-  (display (check-list-element sub-branch-combinations unique-combinations)) (newline)
+ 
   
   (cond
     ((and (= (length unique-combinations) combination-length) (= (length sub-branch-combinations) 0))
@@ -159,16 +150,13 @@
 
   (define (combination-generator)
     ;(display "\nInside combination generator")(newline)
-    (display "\nPrev combinations: ") 
-    (display prev-combinations) (newline)
+   
     
     
     (define (sub-combination-generator)
-      (display "\nInside sub combination generator") (newline)
+      ;(display "\nInside sub combination generator") (newline)
       (define initial-value (list-ref prev-combinations starting-index))
-      (display "initial value: ")
-      
-      (display initial-value) (newline)
+     
       (define temp-comb null)
       (cond
         ((list? initial-value)
@@ -206,15 +194,11 @@
                 )
                )
              (define temp-comb-status (check-state temp-comb new-value combination-length sub-branch-combinations))
-             (display "created combination: ")
-             (display temp-comb-status) (newline)
+             
                 
              (cond
                (temp-comb-status
                 (set! temp-comb temp-comb-status)
-
-                (display "verified combination: ")
-                (display temp-comb) (newline)
                 
                 (set! sub-branch-combinations (append-list sub-branch-combinations temp-comb))
                 
@@ -253,12 +237,6 @@
       (inner-sub-combination)
 
       (set! starting-index (+ starting-index 1))
-
-      (display "starting index: ")
-      (display starting-index) (newline)
-
-      (display "length of prev combinations: ")
-      (display (length prev-combinations)) (newline)
       
       (cond
         ((< starting-index (- (length prev-combinations) 1))
@@ -267,11 +245,8 @@
         )
       
       )
-    (sub-combination-generator)
+    (sub-combination-generator)    
     
-    (display "final sub branch combinations: ")
-    (display sub-branch-combinations) (newline)
-
     (set! prev-combinations sub-branch-combinations)
     (set! sub-branch-combinations null)
     (set! starting-index 0)
@@ -287,9 +262,29 @@
   (combination-generator)
   (display "\nTotal combinations: ")
   (display total-combinations) (newline)
+
+  (count-combinations total-combinations)
+  )
+
+(define (count-combinations combinations)
+  (define count 0)
+  (map
+   (lambda(x)
+     (map
+      (lambda(y)
+        (set! count (+ count 1))
+        )
+      x)
+     )
+   combinations)
+
+  (display "\nTotal number of combinations: ")
+  (display count) (newline)
   )
 
 (tree-generator list1)
+
+
 
 
 
