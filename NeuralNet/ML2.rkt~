@@ -1,6 +1,7 @@
 #lang racket
 (provide DNN Layer Fit Predict)
 (require "derivative.rkt")
+(require "solver.rkt")
 
 (define (Layer no-of-neurons)  
   (list no-of-neurons (map (lambda(x) 0) (enumerate-interval 1 no-of-neurons)) )
@@ -41,8 +42,7 @@
   
   (define neurons (car model))
   (define no-of-output-neurons  (list-ref neurons (- (length neurons) 1)))
-  (display "\nNumber of output neurons:")
-  (display no-of-output-neurons)(newline)
+  
   
   (define weights (cadr model))
   (define last-output null)
@@ -56,8 +56,7 @@
                                        ) (enumerate-interval 1 no-of-output-neurons))
                                 output-structure)
                               target))
-  (display "\n target outputs:")
-  (display target-outputs)
+  
   (define model-length (length weights))
 
   (define (epoch-loop) 
@@ -65,8 +64,6 @@
          (display "\nepoch:")
          (display epochs)(newline)
          (map (lambda(x)
-                (display "\nmapped feature:")
-                (display x)(newline)
                 (set! last-output (forward-propagation weights model-length x))
                 (set! all-outputs (append-list all-outputs (cadr last-output)))
                 (set! outputs (append-list outputs (car last-output)))                
@@ -74,20 +71,18 @@
   (set! weights (backward-propagation outputs target-outputs all-outputs neurons weights model-length learning-rate))
   (set! epochs (- epochs 1))
   (set! outputs null)
+  (set! all-outputs null)
   (epoch-loop)
   )
          ))
 
   (epoch-loop) 
 
-   (list neurons weights)  
+   (list neurons weights) 
   
   )
 
-
-
 (define (softmax-activation prev-layer-neurons)
-  (display "\nInside softmax ")
   
   (define total-exponentials (accumulate + 0 (map (lambda(y) (exp y)) prev-layer-neurons)))
   ;(display "\ntotal-exponentials:")
@@ -98,8 +93,7 @@
 (define (forward-propagation weights model-length features)
   (define count 0)
   (define prev-layer-neurons null)
-  (define all-neurons null)
-  
+  (define all-neurons null)  
   
   (define (propagate layered-weights)
     (cond
@@ -112,25 +106,19 @@
        (propagate (cdr layered-weights)))
       ((< count model-length)       
        (set! count (+ count 1))
-       (set! prev-layer-neurons (map (lambda(x)(accumulate + 0 (map (lambda(y) (* x y) ) (car layered-weights)))) prev-layer-neurons))
+       (set! prev-layer-neurons (softmax-activation (map (lambda(x)(accumulate + 0 (map (lambda(y) (* x y) ) (car layered-weights)))) prev-layer-neurons)))
        ;(display "\nNew prev-layer-neurons in second conditional:")
        (display prev-layer-neurons) (newline)
        (set! all-neurons (append-list all-neurons prev-layer-neurons))
        (propagate (cdr layered-weights))
        )
-      (else (display "\n forward propagation completed\n")
-            (display "\nFinal Prev-layer-neurons:")
-            (display prev-layer-neurons)(newline)
-            
-            (list all-neurons (softmax-activation prev-layer-neurons))            
+      (else 
+            (list prev-layer-neurons all-neurons)            
             )
       )
     )
-  (propagate weights)
-  
+  (propagate weights)  
   )
-
-
 
 (define (accumulate op initial sequence)
   ;(display "\nInside accumulate")
@@ -150,67 +138,120 @@
 (define Z '(summation (* w x) n))
 (define Z0 '(* w x) )
 
-(define all-functions (list 'Af Ef E E0 Z Z0))
+(define all-functions (list 'Af 'Ef 'E 'E0 'Z 'Z0))
 
+(define (check-list-element list1 element)
+(define (check list1)
+  (cond
+    ((null? list1) '#f)
+    ((eq? (car list1) element) (car list1))
+    (else (check (cdr list1)))
+    ))
+  (check list1)
+  )
 
-(define (chain-rule numerator-function denominator-function error)
-  (display "numerator function :")
-  (display numerator-function) (newline)
-  (display "denominator function  :")
-  (display denominator-function) (newline)
+(define (make-fraction numerator denominator)
+  '(/ numerator denominator))
 
-  (define numerator-elements (flatmap numerator-function))
-  (display "numerator-elements: ")
-  (display numerator-elements)(newline)
+(define (chain-rule numerator-function denominator-function error layer-neuron-outputs)
+  
+  (define numerator-elements (fringe numerator-function))
+ 
+  (define whole-chain-rule (list '*))
 
-  (display "all functions:")
-  (display all-functions) (newline)
+  (define (find-all-derivatives numerator-elements)
+    ;(display "inside find all derivatives of numerator elements")(newline)
+    (cond ((check-list-element numerator-elements denominator-function)
+           ;(display "\ncondition passed")(newline)
+           (set! whole-chain-rule (append-list whole-chain-rule (deriv numerator-function denominator-function))))
+          (else
+           ;(display "\nelse condition")(newline)
+           (define current-denominator null)
+           (map
+            (lambda(x)
+              (cond ((check-list-element numerator-elements x)
+                     (set! current-denominator x)))
+              )
+            all-functions)
+           ;(display "after searching for denominator: ")
+           ;(display current-denominator) (newline)
+           
+           (set! whole-chain-rule (append-list whole-chain-rule (deriv numerator-function current-denominator)))
+           ;(display "after setting whole chain rule: ")
+           ;(display whole-chain-rule) (newline)
+
+           ;(display "current-denominator : next-numerator :")
+           ;(display current-denominator) (newline)
+           (cond
+                ((eq? current-denominator 'Af) (set! current-denominator Af))
+                ((eq? current-denominator 'Ef) (set! current-denominator Ef))
+                ((eq? current-denominator 'E) (set! current-denominator E))
+                ((eq? current-denominator 'E0) (set! current-denominator E0))
+                ((eq? current-denominator 'Z) (set! current-denominator Z))
+                ((eq? current-denominator 'Z0) (set! current-denominator Z0)))
+           
+           ;(display "set current-denominator: ")
+           ;(display current-denominator) (newline)
+           
+           (define current-denominator-elements (fringe current-denominator))
+           
+           ;(display "\nCurrent denominator elements: ")
+           ;(display current-denominator-elements) (newline)
+           
+           (find-all-derivatives current-denominator-elements)       
+           )
+           
+          )
+    
+    
+    )
+
+  (if (check-list-element numerator-elements denominator-function) (deriv (make-fraction numerator-function denominator-function))
+      (find-all-derivatives numerator-elements))
+
+  (display "\nExecute gradient using whole chain rule ")(newline)
+  (display "whole chain rule: ")
+  (display whole-chain-rule)(newline)
+
+  ;solve the expression base chain-rule
+  (define Af1 1)
+  (define Ef1 1)
+  (define E1 1)
+  (define E01 1)
+  (define Z1 1)
+  (define Z01 1)
+  (define n (length layer-neuron-outputs))
+  (define y 1)
+  (define gradient-solution (solve (list whole-chain-rule Af1 Ef1 E1 E01 Z1 Z01 n y)))
+  (display "\nGradient solution: ")
+  (display gradient-solution) (newline)
+  
   error
   )
 
-(define (flatmap proc seq) 
-  (accumulate append null (map proc seq)))
+(define (fringe x)
+(cond ((null? x) null)
+((not (pair? x)) (list x))
+(else (append (fringe (car x))
+(fringe (cdr x))))))
 
-(define (gradient Error-function denominator-function layer model neurons error)
+(define (gradient Error-function denominator-function layer-count layer-weights layer-neuron-outputs error)
   ;(deriv Error-function denominator-function)
   (define numerator-function Error-function)
-  (chain-rule numerator-function error)
+  
+  (chain-rule numerator-function denominator-function error layer-neuron-outputs)
   )
-
 
 
 (define (backward-propagation outputs target-outputs all-outputs neurons weights model-length learning-rate)
   (display "\nback-propagation")(newline)
-  (display "last layer outputs:")
-  (display outputs)(newline)
-
-  (display "target outputs:")
-  (display target-outputs) (newline)
-
+  
   (define no-of-outputs (length outputs))
-  
-  
-  (display "\n Number of outputs")
-  (display no-of-outputs) (newline)
-
-  (display "\n Number of data for all neurons:")
-  (display (length all-outputs))(newline)
   
   (define error (/ (accumulate + 0 (map (lambda(x y) (cross-entropy x y) ) outputs target-outputs)) no-of-outputs))
 
-  (display "\nError:")
-  (display error)(newline)
-
-  (display "\nall neuron outputs:")
-  (display all-outputs) (newline)
-
-  (display "\nweights before update")
-  (display weights) (newline)
-
-  (define updated-weight null)
-
-  (display "\nmodel-length:")
-  (display model-length)(newline)
+  
+  (define updated-weight null) 
 
   (map
    (lambda(x y z)     
@@ -220,11 +261,11 @@
            
            (cond
              ((= layer-count 1)
-              (set! layer-gradient (gradient E0 Z0 layer-count layer-weight (list-ref z 0) error))
+              (set! layer-gradient (gradient E0 'w layer-count layer-weight (list-ref z 0) error))
               (set! updated-weight (append-list updated-weight (map (lambda(x) (- x (* learning-rate layer-gradient))) layer-weight)))              
               )
              ((= layer-count model-length)
-              (set! layer-gradient (gradient Ef Z layer-count layer-weight (list-ref z (- layer-count 1)) error))
+              (set! layer-gradient (gradient Ef 'w layer-count layer-weight (list-ref z (- layer-count 1)) error))
               ;(display "\nAfter layer-gradient:")
               ;(display layer-gradient)
               (set! updated-weight (append-list updated-weight (map (lambda(x) (- x (* learning-rate layer-gradient))) layer-weight)))
@@ -233,7 +274,7 @@
               (update-weight (list-ref weights (- layer-count 2)) (- layer-count 1))
               )
              ((> layer-count 0)
-              (set! layer-gradient (gradient E Z layer-count layer-weight (list-ref z (- layer-count 1)) error))
+              (set! layer-gradient (gradient E 'w layer-count layer-weight (list-ref z (- layer-count 1)) error))
               (set! updated-weight (append-list updated-weight (map (lambda(x) (- x (* learning-rate layer-gradient))) layer-weight)))
               (update-weight (list-ref weights (- layer-count 2)) (- layer-count 1))
               )
@@ -248,8 +289,6 @@
   target-outputs
   all-outputs
   )
-  (display "\nUPdated weights:")
-  (display weights) (newline)
   weights
   )
 

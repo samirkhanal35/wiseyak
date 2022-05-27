@@ -13,11 +13,13 @@
 
 (define train-data (list (list 0 0) (list 0 1) (list 1 0) (list 1 1)))
 (define train-data2 (list (list 0 0) (list 0 1) ))
+(define train-data3 (list (list 0 0) ))
 
 (define destination (list 0 0 0 1))
 (define destination2 (list 0 0))
+(define destination3 (list 0))
 
-(define epoch 2)
+(define epoch 1)
 (define learning-rate 0.1)
 
 (Fit model train-data destination epoch output-categories learning-rate)

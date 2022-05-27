@@ -1,0 +1,1 @@
+("8.4" ta6le ("e36135b38000a6ea71d7d296a19202808ad553c4" . "f8cba9604af09ae3b2e9a759ca72554978bb9e3e") #"/home/samir/Documents/wiseyak/NeuralNet/derivative.rkt" #"/home/samir/Documents/wiseyak/NeuralNet/solver.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
