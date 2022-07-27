@@ -260,10 +260,11 @@
      )    
     )
   (combination-generator)
-  (display "\nTotal combinations: ")
-  (display total-combinations) (newline)
+  ;(display "\nTotal combinations: ")
+  ;(display total-combinations) (newline)
 
   (count-combinations total-combinations)
+  total-combinations
   )
 
 (define (count-combinations combinations)
@@ -282,10 +283,14 @@
   (display count) (newline)
   )
 
-(tree-generator list1)
+(define all-possible-combinations (tree-generator list1))
 
-
-
-
-
-
+(define layer-count 1)
+(map
+ (lambda(x)
+   (display "\nlayer: ")
+   (display layer-count) (newline)
+   (display x) (newline)
+   (set! layer-count (+ layer-count 1))
+   )
+ all-possible-combinations)
